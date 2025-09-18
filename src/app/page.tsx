@@ -1,53 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/config/supabase";
 import Image from "next/image";
 import Link from "next/link";
 import "./homepage.css";
 
-interface Course {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  level: string | null;
-  language: string | null;
-  price: number;
-  duration_hours: number | null;
-  ects_max: number | null;
-  image_url: string | null;
-  created_at: string;
-}
-
 export default function HomePage() {
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
-  const fetchCourses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .limit(3);
-
-      if (error) throw error;
-      setCourses(data || []);
-
-
-    } catch (err) {
-      console.error('Errore nel caricamento dei corsi:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="homepage">
@@ -95,84 +54,53 @@ export default function HomePage() {
       <section className="section section-large courses-section">
         <h2 className="section-title">I nostri percorsi</h2>
         <div className="courses-grid">
-          {loading ? (
-            // Loading state
-            Array(3).fill(0).map((_, idx) => (
-              <div key={idx} className="loading-card">
-                <div className="loading-image"></div>
-                <div className="loading-content">
-                  <div className="loading-title"></div>
-                  <div className="loading-text"></div>
-                  <div className="loading-text-short"></div>
-                  <div className="loading-price"></div>
-                </div>
-              </div>
-            ))
-          ) : courses.length > 0 ? (
-            // Courses
-            courses.map((course) => (
-              <div key={course.id} className="course-card">
-                <div className="course-image-container">
-                  <Image
-                    src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=192&q=80"
-                    alt={`Corso ${course.title} - ${course.description || 'Descrizione non disponibile'}`}
-                    width={400}
-                    height={192}
-                    className="course-image"
-                    style={{ width: 'auto', height: 'auto' }}
-                  />
-                  <div className="course-image-overlay"></div>
-                </div>
-                <div className="course-content">
-                  <div className="course-icon">
-                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <h3 className="course-title">{course.title}</h3>
-                  <p className="course-description">
-                    {course.description || 'Nessuna descrizione disponibile'}
-                  </p>
-                  <div className="course-meta">
-                    <div className="course-meta-item">
-                      <svg className="course-meta-icon" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {course.duration_hours} ore
-                    </div>
-                    <div className="course-meta-item">
-                      <svg className="course-meta-icon" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {course.level || 'Tutti i livelli'}
-                    </div>
-                    {course.language && (
-                      <div className="course-meta-item">
-                        <svg className="course-meta-icon" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.103 9.75c-.83-1.641.759-3.221 2.874-3.387A48.15 48.15 0 0112 6.25c2.291 0 4.545.16 6.75.47 2.114.166 3.703 1.746 2.874 3.387A18.022 18.022 0 0115 17.5m-9-12h.008v.008H6V5.5zm.375 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                        </svg>
-                        {course.language}
-                      </div>
-                    )}
-                  </div>
-                  <div className="course-footer">
-                    <span className="course-price">€{course.price}</span>
-                    <button 
-                      className="btn-course"
-                      onClick={() => router.push(`/courses/${course.slug}`)}
-                    >
-                      Scopri di più
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            // No courses
-            <div className="no-courses-message">
-              Nessun corso disponibile al momento.
+          <div className="course-card">
+            <div className="course-image-container">
+              <Image
+                src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=192&q=80"
+                alt="Corso di esempio"
+                width={400}
+                height={192}
+                className="course-image"
+                style={{ width: 'auto', height: 'auto' }}
+              />
+              <div className="course-image-overlay"></div>
             </div>
-          )}
+            <div className="course-content">
+              <div className="course-icon">
+                <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="course-title">Corso di Test</h3>
+              <p className="course-description">
+                Questo è un corso di test per verificare che il sito funzioni correttamente.
+              </p>
+              <div className="course-meta">
+                <div className="course-meta-item">
+                  <svg className="course-meta-icon" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  10 ore
+                </div>
+                <div className="course-meta-item">
+                  <svg className="course-meta-icon" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Principiante
+                </div>
+              </div>
+              <div className="course-footer">
+                <span className="course-price">€99</span>
+                <button 
+                  className="btn-course"
+                  onClick={() => router.push("/courses")}
+                >
+                  Scopri di più
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
