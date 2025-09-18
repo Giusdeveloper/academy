@@ -1,0 +1,170 @@
+/* Stili per il layout del corso con video player e sidebar */
+
+/* Video Player */
+.video-player-container {
+  position: relative;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 20px;
+  z-index: 20;
+}
+
+/* Sidebar */
+.lesson-sidebar {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.lesson-item {
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.lesson-item:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.lesson-item:hover .lesson-item.active {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+}
+
+.lesson-item.active {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.lesson-item.completed {
+  background: #f0fdf4;
+  border-left: 4px solid #22c55e;
+}
+
+.lesson-checkmark {
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+
+/* Breadcrumbs */
+.breadcrumb-container {
+  background: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb-item {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item:hover {
+  color: #ec4899;
+}
+
+.breadcrumb-separator {
+  color: #d1d5db;
+  margin: 0 8px;
+}
+
+/* Progress Bar */
+.progress-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  width: 95%;
+}
+
+/* Next Lesson Card */
+.next-lesson-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #f59e0b;
+  margin-top: 16px;
+}
+
+/* Scrollbar personalizzata */
+.lesson-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lesson-sidebar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.lesson-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.lesson-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .lesson-sidebar {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-player-container {
+    margin-bottom: 24px;
+  }
+  
+  .lesson-item {
+    padding: 12px;
+  }
+}

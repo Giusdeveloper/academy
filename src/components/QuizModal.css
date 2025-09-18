@@ -1,0 +1,32 @@
+/* Stili per il QuizModal */
+
+.quiz-progress-bar {
+  background: linear-gradient(to right, #9e005c, #c2185b);
+  height: 8px;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  width: 0%;
+}
+
+/* Classi per diverse percentuali di progresso */
+.quiz-progress-0 { width: 0%; }
+.quiz-progress-5 { width: 5%; }
+.quiz-progress-10 { width: 10%; }
+.quiz-progress-15 { width: 15%; }
+.quiz-progress-20 { width: 20%; }
+.quiz-progress-25 { width: 25%; }
+.quiz-progress-30 { width: 30%; }
+.quiz-progress-35 { width: 35%; }
+.quiz-progress-40 { width: 40%; }
+.quiz-progress-45 { width: 45%; }
+.quiz-progress-50 { width: 50%; }
+.quiz-progress-55 { width: 55%; }
+.quiz-progress-60 { width: 60%; }
+.quiz-progress-65 { width: 65%; }
+.quiz-progress-70 { width: 70%; }
+.quiz-progress-75 { width: 75%; }
+.quiz-progress-80 { width: 80%; }
+.quiz-progress-85 { width: 85%; }
+.quiz-progress-90 { width: 90%; }
+.quiz-progress-95 { width: 95%; }
+.quiz-progress-100 { width: 100%; }

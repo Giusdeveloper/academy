@@ -1,0 +1,148 @@
+/* Stili per la pagina di verifica email */
+
+.verify-email-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.verify-email-container {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.verify-email-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 3rem;
+  width: 3rem;
+  border: 2px solid #e5e7eb;
+  border-top-color: #6366f1;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.status-icon.success {
+  background-color: #f0fdf4;
+}
+
+.status-icon.error {
+  background-color: #fef2f2;
+}
+
+.status-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.status-icon.success svg {
+  color: #16a34a;
+}
+
+.status-icon.error svg {
+  color: #dc2626;
+}
+
+.verify-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.verify-message {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.verify-redirect {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.login-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  background-color: #6366f1;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  text-decoration: none;
+}
+
+.login-button:hover {
+  background-color: #4f46e5;
+}
+
+.verify-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.register-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #6366f1;
+  color: #6366f1;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+}
+
+.register-button:hover {
+  background-color: #6366f1;
+  color: white;
+}
+
+/* Responsive */
+@media (min-width: 640px) {
+  .verify-email-page {
+    padding: 3rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .verify-email-page {
+    padding: 3rem 2rem;
+  }
+}
