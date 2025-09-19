@@ -59,8 +59,8 @@ export default async function LessonPage({
     
     // Per le altre lezioni, controlla se la lezione precedente è completata
     // Questa logica deve essere implementata con il progresso dell'utente
-    // Per ora, sblocchiamo tutte le lezioni per il test
-    return true;
+    // Per ora, sblocchiamo solo la prima lezione
+    return false;
   };
 
   return (
