@@ -4,6 +4,7 @@ import Link from 'next/link';
 import LessonWithQuiz from '../../../../../components/LessonWithQuiz';
 import LessonNavigation from '../../../../../components/LessonNavigation';
 import ManualUnlockProvider from '../../../../../components/ManualUnlockProvider';
+import UnlockButton from '../../../../../components/UnlockButton';
 
 import './lesson.css';
 
@@ -112,6 +113,17 @@ export default async function LessonPage({
                 </h2>
                 <p className="text-sm text-gray-600">{lessons?.length || 0} Lezioni</p>
         </div>
+
+              {/* Pulsante di sblocco manuale */}
+              <div className="mb-4">
+                <UnlockButton
+                  currentLessonId={lessonId}
+                  lessons={lessons || []}
+                  onUnlock={(lessonOrder) => {
+                    console.log(`🔓 Lezione ${lessonOrder} sbloccata!`);
+                  }}
+                />
+              </div>
 
               {/* Lista lezioni */}
               <div className="space-y-2 mb-6 max-h-96 overflow-y-auto">
