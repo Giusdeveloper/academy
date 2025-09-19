@@ -30,23 +30,42 @@ export default function LessonNavigation({
 
   console.log('🔍 LessonNavigation renderizzato:', { lessons: lessons.length, currentLessonId, courseId });
   
+  // Trova la lezione corrente
+  const currentLesson = lessons.find(l => l.id === currentLessonId);
+  const currentLessonStatus = currentLesson ? getLessonStatus(currentLesson.id) : 'locked';
+  
+  // Mostra il pulsante solo se:
+  // 1. La lezione corrente è completata (quiz superato)
+  // 2. La prossima lezione non è già sbloccata
+  const shouldShowUnlockButton = currentLesson && 
+    currentLessonStatus === 'completed' && 
+    !isLessonUnlocked(currentLesson.order + 1);
+  
+  console.log('🔍 Debug sblocco:', {
+    currentLesson: currentLesson?.title,
+    currentLessonStatus,
+    shouldShowUnlockButton,
+    nextLessonUnlocked: currentLesson ? isLessonUnlocked(currentLesson.order + 1) : false
+  });
+  
   return (
     <div className="space-y-2">
-      {/* Pulsante per sbloccare la prossima lezione */}
-      <button
-        onClick={() => {
-          const currentLesson = lessons.find(l => l.id === currentLessonId);
-          if (currentLesson) {
-            unlockLesson(currentLesson.order + 1);
-          }
-          if (onUnlockNext) {
-            onUnlockNext();
-          }
-        }}
-        className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-4"
-      >
-        🔓 Sblocca Prossima Lezione
-      </button>
+      {/* Pulsante per sbloccare la prossima lezione - solo se necessario */}
+      {shouldShowUnlockButton && (
+        <button
+          onClick={() => {
+            if (currentLesson) {
+              unlockLesson(currentLesson.order + 1);
+            }
+            if (onUnlockNext) {
+              onUnlockNext();
+            }
+          }}
+          className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-4"
+        >
+          🔓 Sblocca Prossima Lezione
+        </button>
+      )}
       
       {lessons.map((lesson) => {
         const isUnlocked = isLessonUnlocked(lesson.order);
