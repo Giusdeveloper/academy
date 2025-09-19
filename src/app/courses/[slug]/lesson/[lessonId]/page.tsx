@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase-server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import LessonWithQuiz from '../../../../../components/LessonWithQuiz';
+import LessonNavigation from '../../../../../components/LessonNavigation';
 
 import './lesson.css';
 
@@ -63,16 +64,7 @@ export default async function LessonPage({
   const lessons: LessonNavigation[] | null = lessonsData as LessonNavigation[] | null;
 
 
-  // Funzione helper per determinare se una lezione è sbloccata
-  const isLessonUnlocked = (lessonOrder: number) => {
-    // Prima lezione sempre sbloccata
-    if (lessonOrder === 1) return true;
-    
-    // Per le altre lezioni, controlla se la lezione precedente è completata
-    // Questa logica deve essere implementata con il progresso dell'utente
-    // Per ora, sblocchiamo solo la prima lezione
-    return false;
-  };
+  // La logica di sblocco è ora gestita dal componente LessonNavigation
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -121,66 +113,12 @@ export default async function LessonPage({
 
               {/* Lista lezioni */}
               <div className="space-y-2 mb-6 max-h-96 overflow-y-auto">
-                
-                {lessons?.map((l, index) => {
-                  const isUnlocked = isLessonUnlocked(l.order);
-                  const isClickable = isUnlocked;
-                  
-                  const LessonContent = () => (
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                        l.id === lessonId
-                          ? 'bg-white text-[#9e005c]'
-                          : !isUnlocked
-                          ? 'bg-gray-300 text-gray-500'
-                          : index === 0 
-                          ? 'bg-white text-[#9e005c]' 
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {l.order}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className={`font-medium text-sm leading-tight truncate ${
-                          l.id === lessonId 
-                            ? 'text-white' 
-                            : !isUnlocked
-                            ? 'text-gray-400'
-                            : 'text-gray-900'
-                        }`}>
-                          {l.title}
-                        </h3>
-                      </div>
-                      {l.id === lessonId && (
-                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
-                      )}
-                      {!isUnlocked && (
-                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                      )}
-                    </div>
-                  );
-
-                  return isClickable ? (
-                <Link
-                      key={l.id}
-                      href={`/courses/${slug}/lesson/${l.id}`}
-                      className={`lesson-item block ${
-                        l.id === lessonId ? 'active' : ''
-                      }`}
-                    >
-                      <LessonContent />
-                </Link>
-              ) : (
-                    <div
-                      key={l.id}
-                      className="lesson-item block opacity-60 cursor-not-allowed"
-                      title="Lezione bloccata - Completa la prima lezione per sbloccare"
-                    >
-                      <LessonContent />
-                    </div>
-                  );
-                })}
+                <LessonNavigation 
+                  lessons={lessons || []}
+                  currentLessonId={lessonId}
+                  courseId={courseId}
+                  baseUrl={`/courses/${slug}`}
+                />
               </div>
 
             </div>
