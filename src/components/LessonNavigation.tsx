@@ -28,23 +28,25 @@ export default function LessonNavigation({
   const { getLessonStatus } = useLessonProgress(courseId);
   const { isLessonUnlocked, unlockLesson } = useManualUnlock();
 
+  console.log('🔍 LessonNavigation renderizzato:', { lessons: lessons.length, currentLessonId, courseId });
+  
   return (
     <div className="space-y-2">
       {/* Pulsante per sbloccare la prossima lezione */}
-      {onUnlockNext && (
-        <button
-          onClick={() => {
-            const currentLesson = lessons.find(l => l.id === currentLessonId);
-            if (currentLesson) {
-              unlockLesson(currentLesson.order + 1);
-            }
+      <button
+        onClick={() => {
+          const currentLesson = lessons.find(l => l.id === currentLessonId);
+          if (currentLesson) {
+            unlockLesson(currentLesson.order + 1);
+          }
+          if (onUnlockNext) {
             onUnlockNext();
-          }}
-          className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-        >
-          🔓 Sblocca Prossima Lezione
-        </button>
-      )}
+          }
+        }}
+        className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-4"
+      >
+        🔓 Sblocca Prossima Lezione
+      </button>
       
       {lessons.map((lesson) => {
         const isUnlocked = isLessonUnlocked(lesson.order);
