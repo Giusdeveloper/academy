@@ -57,9 +57,10 @@ export default async function LessonPage({
     // Prima lezione sempre sbloccata
     if (lessonOrder === 1) return true;
     
-    // Sblocca la lezione corrente e tutte le precedenti
-    const currentLessonOrder = lesson.order;
-    return lessonOrder <= currentLessonOrder;
+    // Per le altre lezioni, controlla se la lezione precedente è completata
+    // Questa logica deve essere implementata con il progresso dell'utente
+    // Per ora, sblocchiamo tutte le lezioni per il test
+    return true;
   };
 
   return (
