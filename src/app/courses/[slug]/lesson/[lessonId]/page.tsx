@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import LessonWithQuiz from '../../../../../components/LessonWithQuiz';
 import LessonNavigation from '../../../../../components/LessonNavigation';
+import ManualUnlockProvider from '../../../../../components/ManualUnlockProvider';
 
 import './lesson.css';
 
@@ -67,7 +68,8 @@ export default async function LessonPage({
   // La logica di sblocco è ora gestita dal componente LessonNavigation
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ManualUnlockProvider courseId={courseId}>
+      <div className="min-h-screen bg-gray-50">
       {/* Header con breadcrumbs */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -118,6 +120,10 @@ export default async function LessonPage({
                   currentLessonId={lessonId}
                   courseId={courseId}
                   baseUrl={`/courses/${slug}`}
+                  onUnlockNext={() => {
+                    // Funzione per sbloccare la prossima lezione
+                    console.log('Sbloccando prossima lezione...');
+                  }}
                 />
               </div>
 
@@ -125,6 +131,7 @@ export default async function LessonPage({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </ManualUnlockProvider>
   );
 } 

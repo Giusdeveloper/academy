@@ -1,6 +1,7 @@
 'use client';
 
 import { useLessonProgress } from '@/hooks/useLessonProgress';
+import { useManualUnlock } from './ManualUnlockProvider';
 import Link from 'next/link';
 
 interface Lesson {
@@ -14,18 +15,37 @@ interface LessonNavigationProps {
   currentLessonId: string;
   courseId: string;
   baseUrl: string;
+  onUnlockNext?: () => void;
 }
 
 export default function LessonNavigation({ 
   lessons, 
   currentLessonId, 
   courseId, 
-  baseUrl 
+  baseUrl,
+  onUnlockNext
 }: LessonNavigationProps) {
-  const { isLessonUnlocked, getLessonStatus } = useLessonProgress(courseId);
+  const { getLessonStatus } = useLessonProgress(courseId);
+  const { isLessonUnlocked, unlockLesson } = useManualUnlock();
 
   return (
     <div className="space-y-2">
+      {/* Pulsante per sbloccare la prossima lezione */}
+      {onUnlockNext && (
+        <button
+          onClick={() => {
+            const currentLesson = lessons.find(l => l.id === currentLessonId);
+            if (currentLesson) {
+              unlockLesson(currentLesson.order + 1);
+            }
+            onUnlockNext();
+          }}
+          className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          🔓 Sblocca Prossima Lezione
+        </button>
+      )}
+      
       {lessons.map((lesson) => {
         const isUnlocked = isLessonUnlocked(lesson.order);
         const status = getLessonStatus(lesson.id);
