@@ -1,5 +1,8 @@
-import { createServerClient } from '@/lib/supabase-server';
-import { notFound } from 'next/navigation';
+'use client';
+
+import { supabase } from '@/config/supabase';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import LessonWithQuiz from '../../../../../components/LessonWithQuiz';
 import LessonNavigation from '../../../../../components/LessonNavigation';
@@ -15,58 +18,112 @@ interface LessonNavigation {
   order: number;
 }
 
-export default async function LessonPage({
-  params,
-}: {
-  params: Promise<{ slug: string; lessonId: string }>;
-}) {
-  // Await params come richiesto da Next.js 15
-  const { slug, lessonId } = await params;
-  const supabase = await createServerClient();
+export default function LessonPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { slug, lessonId } = params as { slug: string; lessonId: string };
+  
+  const [lesson, setLesson] = useState<any>(null);
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [lessons, setLessons] = useState<LessonNavigation[]>([]);
+  const [courseId, setCourseId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Prima recupero il corso dal slug per ottenere l'ID
-  const { data: course } = await supabase
-    .from('courses')
-    .select('id')
-    .eq('slug', slug)
-    .single();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Prima recupero il corso dal slug per ottenere l'ID
+        const { data: course, error: courseError } = await supabase
+          .from('courses')
+          .select('id')
+          .eq('slug', slug)
+          .single();
 
-  if (!course) {
-    notFound();
-  }
+        if (courseError) throw courseError;
+        if (!course) {
+          router.push('/404');
+          return;
+        }
 
-  const courseId = course.id;
+        setCourseId(course.id);
 
-  // Recupera i dettagli della lezione
-  const { data: lesson } = await supabase
-    .from('lessons')
-    .select('*, courses!inner(*)')
-    .eq('id', lessonId)
-    .single();
+        // Recupera i dettagli della lezione
+        const { data: lessonData, error: lessonError } = await supabase
+          .from('lessons')
+          .select('*, courses!inner(*)')
+          .eq('id', lessonId)
+          .single();
 
-  if (!lesson) {
-    notFound();
-  }
+        if (lessonError) throw lessonError;
+        if (!lessonData) {
+          router.push('/404');
+          return;
+        }
 
-  // Recupera i materiali associati alla lezione
-  const { data: materials } = await supabase
-    .from('materials')
-    .select('*')
-    .eq('lesson_id', lessonId)
-    .order('created_at', { ascending: true });
+        setLesson(lessonData);
 
-  // Recupera tutte le lezioni del corso per la navigazione
-  const { data: lessonsData } = await supabase
-    .from('lessons')
-    .select('id, title, "order"') // Seleziono solo i campi necessari per la navigazione
-    .eq('course_id', lesson.course_id)
-    .order('order');
+        // Recupera i materiali associati alla lezione
+        const { data: materialsData, error: materialsError } = await supabase
+          .from('materials')
+          .select('*')
+          .eq('lesson_id', lessonId)
+          .order('created_at', { ascending: true });
 
-  // Uso l'interfaccia specifica per i dati di navigazione
-  const lessons: LessonNavigation[] | null = lessonsData as LessonNavigation[] | null;
+        if (materialsError) throw materialsError;
+        setMaterials(materialsData || []);
+
+        // Recupera tutte le lezioni del corso per la navigazione
+        const { data: lessonsData, error: lessonsError } = await supabase
+          .from('lessons')
+          .select('id, title, "order"')
+          .eq('course_id', lessonData.course_id)
+          .order('order');
+
+        if (lessonsError) throw lessonsError;
+        setLessons(lessonsData as LessonNavigation[] || []);
+
+      } catch (err) {
+        console.error('Errore nel caricamento dei dati:', err);
+        setError(err instanceof Error ? err.message : 'Errore nel caricamento');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [slug, lessonId, router]);
 
 
   // La logica di sblocco è ora gestita dal componente LessonNavigation
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9e005c] mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento lezione...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !lesson) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">❌ Errore</div>
+          <p className="text-gray-600 mb-4">{error || 'Lezione non trovata'}</p>
+          <Link 
+            href="/courses" 
+            className="bg-[#9e005c] text-white px-6 py-2 rounded-lg hover:bg-[#7a0046] transition-colors"
+          >
+            Torna ai Corsi
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ManualUnlockProvider courseId={courseId}>

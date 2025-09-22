@@ -55,6 +55,58 @@ export function useAdvancedLessonProgress(
   // GESTIONE SESSIONI
   // =============================================================================
 
+  const endLessonSession = useCallback(async (
+    sessionId: string, 
+    status: 'completed' | 'abandoned' = 'completed'
+  ) => {
+    if (!enableSessionTracking) return;
+
+    try {
+      const endTime = new Date();
+      const timeSpent = sessionStartTime.current 
+        ? Math.floor((endTime.getTime() - sessionStartTime.current.getTime()) / 1000)
+        : 0;
+
+      console.log('🏁 Terminando sessione:', { sessionId, status, timeSpent });
+
+      const { error } = await supabase
+        .from('lesson_sessions')
+        .update({
+          session_end: endTime.toISOString(),
+          time_spent: timeSpent,
+          status
+        })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      // Pulisci timeout
+      if (sessionTimeoutRef.current) {
+        clearTimeout(sessionTimeoutRef.current);
+        sessionTimeoutRef.current = null;
+      }
+
+      setCurrentSession(null);
+      sessionStartTime.current = null;
+
+      console.log('✅ Sessione terminata');
+
+    } catch (err) {
+      console.error('❌ Errore nella terminazione sessione:', err);
+    }
+  }, [enableSessionTracking]);
+
+  const getDeviceType = useCallback((): string => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (/mobile|android|iphone|ipad|tablet/.test(userAgent)) {
+      return 'mobile';
+    } else if (/tablet|ipad/.test(userAgent)) {
+      return 'tablet';
+    } else {
+      return 'desktop';
+    }
+  }, []);
+
   const startLessonSession = useCallback(async (lessonId: string) => {
     if (!user || !enableSessionTracking) return null;
 
@@ -104,48 +156,7 @@ export function useAdvancedLessonProgress(
       setError(err instanceof Error ? err.message : 'Errore nell\'avvio sessione');
       return null;
     }
-  }, [user, courseId, currentSession, enableSessionTracking, sessionTimeoutMinutes]);
-
-  const endLessonSession = useCallback(async (
-    sessionId: string, 
-    status: 'completed' | 'abandoned' = 'completed'
-  ) => {
-    if (!enableSessionTracking) return;
-
-    try {
-      const endTime = new Date();
-      const timeSpent = sessionStartTime.current 
-        ? Math.floor((endTime.getTime() - sessionStartTime.current.getTime()) / 1000)
-        : 0;
-
-      console.log('🏁 Terminando sessione:', { sessionId, status, timeSpent });
-
-      const { error } = await supabase
-        .from('lesson_sessions')
-        .update({
-          session_end: endTime.toISOString(),
-          time_spent: timeSpent,
-          status
-        })
-        .eq('id', sessionId);
-
-      if (error) throw error;
-
-      // Pulisci timeout
-      if (sessionTimeoutRef.current) {
-        clearTimeout(sessionTimeoutRef.current);
-        sessionTimeoutRef.current = null;
-      }
-
-      setCurrentSession(null);
-      sessionStartTime.current = null;
-
-      console.log('✅ Sessione terminata');
-
-    } catch (err) {
-      console.error('❌ Errore nella terminazione sessione:', err);
-    }
-  }, [enableSessionTracking]);
+  }, [user, courseId, currentSession, enableSessionTracking, sessionTimeoutMinutes, endLessonSession, getDeviceType]);
 
   // =============================================================================
   // TRACKING VIDEO EVENTS
@@ -423,17 +434,6 @@ export function useAdvancedLessonProgress(
   // =============================================================================
   // UTILITY FUNCTIONS
   // =============================================================================
-
-  const getDeviceType = useCallback((): string => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    if (/mobile|android|iphone|ipad|tablet/.test(userAgent)) {
-      return 'mobile';
-    } else if (/tablet|ipad/.test(userAgent)) {
-      return 'tablet';
-    } else {
-      return 'desktop';
-    }
-  }, []);
 
   const isLessonUnlocked = useCallback((lessonOrder: number, allLessons: { id: string; order: number }[]) => {
     if (lessonOrder === 1) return true;
