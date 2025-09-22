@@ -10,24 +10,38 @@ export default function WorkshopsPage() {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Workshop Live</h1>
+          <h1 className="hero-title">Workshop & Eventi</h1>
           <p className="hero-subtitle">
-            Partecipa ai nostri workshop interattivi e impara direttamente dagli esperti 
-            di Imment. Sessioni pratiche e coinvolgenti per accelerare la tua crescita imprenditoriale.
+            Partecipa agli eventi partner più importanti del settore tech. 
+            Impara direttamente dagli esperti e connettiti con la community.
           </p>
+          <div className="hero-badges">
+            <div className="hero-badge">
+              <span className="badge-icon">🤝</span>
+              <span>Eventi Partner</span>
+            </div>
+            <div className="hero-badge">
+              <span className="badge-icon">🚀</span>
+              <span>Networking</span>
+            </div>
+            <div className="hero-badge">
+              <span className="badge-icon">🎯</span>
+              <span>Tech Community</span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Workshop Features */}
       <section className="features-section">
         <div className="container">
-          <h2 className="section-title text-center">Perché scegliere i nostri workshop</h2>
+          <h2 className="section-title text-center">Perché partecipare ai nostri eventi</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">🎯</div>
               <h3 className="feature-title">Contenuti Pratici</h3>
               <p className="feature-description">
-                Workshop focalizzati su strumenti e strategie immediatamente applicabili 
+                Eventi focalizzati su strumenti e strategie immediatamente applicabili 
                 nel tuo business quotidiano.
               </p>
             </div>
@@ -44,14 +58,14 @@ export default function WorkshopsPage() {
               <h3 className="feature-title">Interattività</h3>
               <p className="feature-description">
                 Sessioni coinvolgenti con Q&A, esercizi pratici e networking 
-                con altri imprenditori e investitori.
+                con altri imprenditori e investitori della community tech.
               </p>
             </div>
             <div className="feature-card">
               <div className="feature-icon">📈</div>
               <h3 className="feature-title">Risultati Misurabili</h3>
               <p className="feature-description">
-                Ogni workshop è progettato per fornire strumenti concreti che puoi 
+                Ogni evento è progettato per fornire strumenti concreti che puoi 
                 implementare subito per accelerare la crescita.
               </p>
             </div>
@@ -59,154 +73,84 @@ export default function WorkshopsPage() {
         </div>
       </section>
 
-      {/* Upcoming Workshops */}
-      <section className="workshops-section">
+      {/* Partner Events Section */}
+      <section className="partner-events-section">
         <div className="container">
-          <h2 className="section-title text-center">Prossimi Workshop</h2>
-          <div className="workshops-grid">
-            <div className="workshop-card">
-              <div className="workshop-image">
-                <Image
-                  src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=250&q=80"
-                  alt="Smart Startup Workshop"
-                  width={400}
-                  height={250}
-                  className="workshop-img"
-                />
-                <div className="workshop-badge">Prossimamente</div>
+          <h2 className="section-title text-center">Eventi Partner</h2>
+          <p className="section-subtitle text-center">
+            Collaboriamo con le migliori community tech italiane per portarti eventi di altissimo livello
+          </p>
+          
+          <div className="partner-event-featured">
+            <div className="partner-event-card">
+              <div className="partner-logo">
+                <div className="logo-container">
+                  <svg className="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </div>
               </div>
-              <div className="workshop-content">
-                <h3 className="workshop-title">Smart Startup: Crea la tua startup innovativa</h3>
-                <p className="workshop-description">
-                  Workshop completo per creare la tua startup con oggetti sociali innovativi, 
-                  statuti ottimizzati e iscrizione nella Sezione Speciale.
+              <div className="partner-event-content">
+                <div className="partner-tag">Google Developer Groups Napoli</div>
+                <h3 className="partner-event-title">Napoli DevFest 2025</h3>
+                <p className="partner-event-description">
+                  Il più grande evento tech di Napoli. Una giornata intera dedicata a intelligenza artificiale, 
+                  gaming, robotica, startup e networking con ospiti internazionali e Alberto Giusti nella Startup Alley.
                 </p>
-                <div className="workshop-details">
-                  <div className="detail-item">
-                    <span className="detail-icon">📅</span>
-                    <span>15 Marzo 2024</span>
+                <div className="partner-event-details">
+                  <div className="detail-row">
+                    <span className="detail-label">📅 Data:</span>
+                    <span className="detail-value">11 Ottobre 2025</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">⏰</span>
-                    <span>14:00 - 18:00</span>
+                  <div className="detail-row">
+                    <span className="detail-label">📍 Luogo:</span>
+                    <span className="detail-value">Città della Scienza, Napoli</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">📍</span>
-                    <span>Online + Torino</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">👥</span>
-                    <span>Max 20 partecipanti</span>
+                  <div className="detail-row">
+                    <span className="detail-label">🎫 Biglietti:</span>
+                    <span className="detail-value">€10 - €50 (limitati)</span>
                   </div>
                 </div>
-                <div className="workshop-price">
-                  <span className="price">€299</span>
-                  <span className="price-note">Early bird: €199</span>
-                </div>
-                <button className="workshop-btn">
-                  Iscriviti al Workshop
-                </button>
-              </div>
-            </div>
-
-            <div className="workshop-card">
-              <div className="workshop-image">
-                <Image
-                  src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&h=250&q=80"
-                  alt="Smart Equity Workshop"
-                  width={400}
-                  height={250}
-                  className="workshop-img"
-                />
-                <div className="workshop-badge">Prossimamente</div>
-              </div>
-              <div className="workshop-content">
-                <h3 className="workshop-title">Smart Equity: Raccogli fondi per la tua startup</h3>
-                <p className="workshop-description">
-                  Impara a utilizzare Cap Table, LOI, SFP e equity crowdfunding per raccogliere 
-                  fondi in modo efficace e sistemico.
-                </p>
-                <div className="workshop-details">
-                  <div className="detail-item">
-                    <span className="detail-icon">📅</span>
-                    <span>22 Marzo 2024</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">⏰</span>
-                    <span>14:00 - 18:00</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">📍</span>
-                    <span>Online + Torino</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">👥</span>
-                    <span>Max 20 partecipanti</span>
-                  </div>
-                </div>
-                <div className="workshop-price">
-                  <span className="price">€399</span>
-                  <span className="price-note">Early bird: €299</span>
-                </div>
-                <button className="workshop-btn">
-                  Iscriviti al Workshop
-                </button>
-              </div>
-            </div>
-
-            <div className="workshop-card">
-              <div className="workshop-image">
-                <Image
-                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=400&h=250&q=80"
-                  alt="Investor Pitch Workshop"
-                  width={400}
-                  height={250}
-                  className="workshop-img"
-                />
-                <div className="workshop-badge">Prossimamente</div>
-              </div>
-              <div className="workshop-content">
-                <h3 className="workshop-title">Investor Pitch: Presenta la tua startup</h3>
-                <p className="workshop-description">
-                  Workshop intensivo per creare e perfezionare il tuo pitch agli investitori. 
-                  Struttura, storytelling e tecniche di presentazione.
-                </p>
-                <div className="workshop-details">
-                  <div className="detail-item">
-                    <span className="detail-icon">📅</span>
-                    <span>29 Marzo 2024</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">⏰</span>
-                    <span>14:00 - 18:00</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">📍</span>
-                    <span>Online + Torino</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-icon">👥</span>
-                    <span>Max 15 partecipanti</span>
-                  </div>
-                </div>
-                <div className="workshop-price">
-                  <span className="price">€249</span>
-                  <span className="price-note">Early bird: €199</span>
-                </div>
-                <button className="workshop-btn">
-                  Iscriviti al Workshop
-                </button>
+                <a 
+                  href="https://www.eventbrite.it/e/napoli-devfest-2025-by-google-developer-groups-napoli-tickets-1322454008539"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="partner-event-btn"
+                >
+                  Acquista Biglietti
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Workshop Imment Section - Hidden for now */}
+      {/* 
+      <section className="workshops-section">
+        <div className="container">
+          <h2 className="section-title text-center">Workshop Imment</h2>
+          <p className="section-subtitle text-center">
+            I nostri workshop esclusivi per accelerare la crescita della tua startup
+          </p>
+          <div className="workshops-grid">
+            Workshop content hidden for now
+          </div>
+        </div>
+      </section>
+      */}
+
       {/* Workshop Format */}
       <section className="format-section">
         <div className="container">
           <div className="format-content">
-            <h2 className="section-title">Formato dei Workshop</h2>
+            <h2 className="section-title">Formato degli Eventi</h2>
             <div className="format-grid">
               <div className="format-step">
                 <div className="step-number">1</div>
@@ -305,7 +249,7 @@ export default function WorkshopsPage() {
           <div className="cta-content">
             <h2 className="cta-title">Pronto a partecipare?</h2>
             <p className="cta-subtitle">
-              Iscriviti ai nostri workshop e accelera la crescita della tua startup 
+              Partecipa ai nostri eventi partner e accelera la crescita della tua startup 
               con strumenti pratici e il supporto di esperti del settore.
             </p>
             <div className="cta-buttons">

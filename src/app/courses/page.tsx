@@ -105,11 +105,12 @@ export default function CoursesPage() {
               <div key={course.id} className="bg-white rounded-2xl border border-[#e5eaf1] overflow-hidden shadow-sm hover:shadow-md transition">
                 <div className="aspect-video relative">
                   <Image 
-                    src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=225&q=80" 
+                    src={course.image_url || "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=225&q=90"} 
                     alt={course.title}
                     width={400}
                     height={225}
                     className="w-full h-full object-cover"
+                    quality={90}
                     onError={() => {
                       console.log(`❌ Errore caricamento immagine per: ${course.title}`);
                     }}
@@ -121,10 +122,10 @@ export default function CoursesPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[#9E005C] font-semibold text-xl">€{course.price}</span>
                     <Link 
-                      href={`/courses/products/${course.id}`} 
+                      href={`/courses/${course.slug}`} 
                       className="bg-[#9E005C] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#7a0046] transition inline-block text-center"
                     >
-                      Iscriviti
+                      Scopri di più
                     </Link>
                   </div>
                 </div>

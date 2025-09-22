@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface UnlockButtonProps {
   currentLessonId: string;
   lessons: Array<{ id: string; order: number; title: string }>;

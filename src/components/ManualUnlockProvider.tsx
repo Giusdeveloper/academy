@@ -40,7 +40,9 @@ export default function ManualUnlockProvider({ children, courseId }: ManualUnloc
     if (unlockedLessons.has(lessonOrder)) return true;
     
     // Controlla se è sbloccata dal progresso
-    return progressUnlocked(lessonOrder);
+    // Nota: ManualUnlockProvider usa una logica semplificata, 
+    // la logica completa è gestita in LessonNavigation
+    return false; // Disabilitiamo il controllo automatico qui per evitare errori
   };
 
   return (

@@ -124,6 +124,50 @@
   width: 95%;
 }
 
+/* Progress Bar dinamica per il corso */
+.course-progress-bar {
+  width: 100%;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  height: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-progress-fill {
+  background: #9e005c;
+  height: 8px;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Classi per percentuali specifiche */
+.progress-0 { width: 0%; }
+.progress-5 { width: 5%; }
+.progress-10 { width: 10%; }
+.progress-15 { width: 15%; }
+.progress-20 { width: 20%; }
+.progress-25 { width: 25%; }
+.progress-30 { width: 30%; }
+.progress-35 { width: 35%; }
+.progress-40 { width: 40%; }
+.progress-45 { width: 45%; }
+.progress-50 { width: 50%; }
+.progress-55 { width: 55%; }
+.progress-60 { width: 60%; }
+.progress-65 { width: 65%; }
+.progress-70 { width: 70%; }
+.progress-75 { width: 75%; }
+.progress-80 { width: 80%; }
+.progress-85 { width: 85%; }
+.progress-90 { width: 90%; }
+.progress-95 { width: 95%; }
+.progress-100 { width: 100%; }
+
+
 /* Next Lesson Card */
 .next-lesson-card {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
@@ -152,6 +196,24 @@
   background: #94a3b8;
 }
 
+/* Course Image */
+.course-image {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.course-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.course-image img {
+  transition: transform 0.3s ease;
+}
+
+.course-image:hover img {
+  transform: scale(1.05);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .lesson-sidebar {
@@ -166,5 +228,9 @@
   
   .lesson-item {
     padding: 12px;
+  }
+  
+  .course-image {
+    margin-bottom: 16px;
   }
 }

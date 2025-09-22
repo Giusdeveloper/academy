@@ -112,94 +112,6 @@ export default function ContactsPage() {
         </div>
       </section>
 
-      {/* Contact Info Section */}
-      <section className="contact-info-section">
-        <div className="container">
-          <div className="contact-grid">
-            {/* Company Info */}
-            <div className="contact-card">
-              <div className="card-icon">🏢</div>
-              <h3 className="card-title">Imment S.r.l.</h3>
-              <div className="contact-details">
-                <div className="detail-item">
-                  <strong>Partita Iva:</strong> 12804470016
-                </div>
-                <div className="detail-item">
-                  <strong>Sede Operativa:</strong><br />
-                  Piazza Teresa Noce 17/D<br />
-                  10155 Torino
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Methods */}
-            <div className="contact-card">
-              <div className="card-icon">📞</div>
-              <h3 className="card-title">Come contattarci</h3>
-              <div className="contact-details">
-                <div className="detail-item">
-                  <strong>Email:</strong><br />
-                  <a href="mailto:info@imment.it" className="contact-link">
-                    info@imment.it
-                  </a>
-                </div>
-                <div className="detail-item">
-                  <strong>Telefono:</strong><br />
-                  <a href="tel:+390112345678" className="contact-link">
-                    +39 011 123 4567
-                  </a>
-                </div>
-                <div className="detail-item">
-                  <strong>Orari:</strong><br />
-                  Lun - Ven: 9:00 - 18:00
-                </div>
-              </div>
-            </div>
-
-            {/* Services Info */}
-            <div className="contact-card">
-              <div className="card-icon">🚀</div>
-              <h3 className="card-title">I nostri servizi</h3>
-              <div className="contact-details">
-                <div className="service-list">
-                  <a 
-                    href="https://www.imment.it/smart-startup" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="service-link"
-                  >
-                    Smart Startup
-                  </a>
-                  <a 
-                    href="https://www.imment.it/smart-equity" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="service-link"
-                  >
-                    Smart Equity
-                  </a>
-                  <a 
-                    href="https://www.imment.it/nursery-afc" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="service-link"
-                  >
-                    Nursery AFC
-                  </a>
-                  <a 
-                    href="https://www.imment.it/work-for-equity" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="service-link"
-                  >
-                    Smart People
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Contact Form Section */}
       <section className="form-section">
@@ -222,29 +134,6 @@ export default function ContactsPage() {
         </div>
       </section>
 
-      {/* Map Section */}
-      <section className="map-section">
-        <div className="container">
-          <h2 className="section-title text-center">Dove ci troviamo</h2>
-          <div className="map-container">
-            <div className="map-placeholder">
-              <div className="map-content">
-                <div className="map-icon">📍</div>
-                <h3>Piazza Teresa Noce 17/D</h3>
-                <p>10155 Torino, Italia</p>
-                <a 
-                  href="https://maps.google.com/?q=Piazza+Teresa+Noce+17/D,+10155+Torino" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="map-link"
-                >
-                  Visualizza su Google Maps
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="cta-section">
@@ -278,6 +167,7 @@ export default function ContactsPage() {
                 alt="Imment Logo"
                 width={120}
                 height={40}
+                style={{ width: "auto", height: "auto" }}
                 className="imment-logo"
               />
             </div>

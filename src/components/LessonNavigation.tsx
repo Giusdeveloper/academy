@@ -25,8 +25,17 @@ export default function LessonNavigation({
   baseUrl,
   onUnlockNext
 }: LessonNavigationProps) {
-  const { getLessonStatus } = useLessonProgress(courseId);
-  const { isLessonUnlocked, unlockLesson } = useManualUnlock();
+  const { getLessonStatus, isLessonUnlocked: progressIsLessonUnlocked } = useLessonProgress(courseId);
+  const { isLessonUnlocked: manualIsLessonUnlocked, unlockLesson } = useManualUnlock();
+  
+  // Funzione combinata che usa sia la logica di progresso che quella manuale
+  const isLessonUnlocked = (lessonOrder: number) => {
+    // Prima controlla se è sbloccata manualmente
+    if (manualIsLessonUnlocked(lessonOrder)) return true;
+    
+    // Poi controlla se è sbloccata dal progresso
+    return progressIsLessonUnlocked(lessonOrder, lessons);
+  };
 
   console.log('🔍 LessonNavigation renderizzato:', { lessons: lessons.length, currentLessonId, courseId });
   

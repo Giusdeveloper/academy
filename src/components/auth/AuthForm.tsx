@@ -18,6 +18,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [resendEmail, setResendEmail] = useState(false);
   const router = useRouter();
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -158,6 +159,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="form-input"
+                autoComplete="given-name"
                 required
               />
             </div>
@@ -173,6 +175,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="form-input"
+              autoComplete="email"
               required
             />
           </div>
@@ -188,6 +191,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="form-input-password"
+                autoComplete="current-password"
                 required
               />
               <button

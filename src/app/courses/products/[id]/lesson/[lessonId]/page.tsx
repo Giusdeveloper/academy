@@ -58,7 +58,7 @@ export default async function LessonPage({
     if (lessonOrder === 1) return true;
     
     // Per le altre lezioni, controlla se la lezione precedente è completata
-    // Questa logica deve essere implementata con il progresso dell'utente
+    // Questa logica è gestita dal componente LessonNavigation con useLessonProgress
     // Per ora, sblocchiamo solo la prima lezione
     return false;
   };

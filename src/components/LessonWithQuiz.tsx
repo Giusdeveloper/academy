@@ -55,7 +55,7 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
   const [videoEnded, setVideoEnded] = useState(false);
   const [videoStarted, setVideoStarted] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const { markVideoWatched, markQuizCompleted, getLessonStatus } = useLessonProgress(courseId);
+  const { markVideoWatched, markLessonCompleted, markQuizCompleted, getLessonStatus } = useLessonProgress(courseId);
 
   const fetchQuiz = useCallback(async () => {
     try {
@@ -179,8 +179,14 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
     // Marca il video come visto
     await markVideoWatched(lesson.id);
     
-    // NON aprire automaticamente il quiz - aspetta che l'utente clicchi "Prossima Lezione"
-    console.log('✅ Video completato. In attesa di clic su "Prossima Lezione"');
+    // Se NON c'è quiz, completa immediatamente la lezione
+    if (!quiz) {
+      console.log('📝 Nessun quiz trovato. Completamento automatico della lezione...');
+      await markLessonCompleted(lesson.id);
+      console.log('✅ Lezione senza quiz completata automaticamente');
+    } else {
+      console.log('📝 Quiz presente. In attesa di clic su "Prossima Lezione" per aprire il quiz');
+    }
   };
 
   const lessonStatus = getLessonStatus(lesson.id);
