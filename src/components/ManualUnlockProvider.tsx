@@ -26,7 +26,7 @@ interface ManualUnlockProviderProps {
 
 export default function ManualUnlockProvider({ children, courseId }: ManualUnlockProviderProps) {
   const [unlockedLessons, setUnlockedLessons] = useState<Set<number>>(new Set([1])); // Prima lezione sempre sbloccata
-  const { isLessonUnlocked: progressUnlocked } = useLessonProgress(courseId);
+  const { isLessonUnlocked: _progressUnlocked } = useLessonProgress(courseId);
 
   const unlockLesson = (lessonOrder: number) => {
     setUnlockedLessons(prev => new Set([...prev, lessonOrder]));

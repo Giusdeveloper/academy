@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           <section className="privacy-section">
             <h2>1. Informazioni Generali</h2>
             <p>
-              Imment S.r.l. ("noi", "nostro" o "la nostra azienda") rispetta la tua privacy e si impegna a proteggere 
+              Imment S.r.l. (&quot;noi&quot;, &quot;nostro&quot; o &quot;la nostra azienda&quot;) rispetta la tua privacy e si impegna a proteggere 
               le tue informazioni personali. Questa Privacy Policy spiega come raccogliamo, utilizziamo e proteggiamo 
               le tue informazioni quando utilizzi la nostra piattaforma Academy.
             </p>

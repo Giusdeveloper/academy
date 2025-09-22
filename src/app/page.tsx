@@ -27,7 +27,7 @@ export default function HomePage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchCourses();
