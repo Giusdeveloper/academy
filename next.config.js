@@ -45,7 +45,7 @@ const nextConfig = {
               "img-src 'self' data: https: https://forms-na1.hsforms.com",
               "font-src 'self' https:",
               "connect-src 'self' https://*.supabase.co https://*.supabase.com https://forms-na1.hsforms.com",
-              "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://drive.google.com https://docs.google.com https://ogs.google.com",
+              "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
               "media-src 'self' https:",
             ].join('; '),
           },

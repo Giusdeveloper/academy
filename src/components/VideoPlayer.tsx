@@ -125,8 +125,8 @@ export default function VideoPlayer({ videoUrl, title, className = '', onVideoEn
         </video>
           );
         })()
-      ) : isYouTube || isVimeo || isGoogleDrive ? (
-        // Video iframe (YouTube, Vimeo, Google Drive)
+      ) : isYouTube || isVimeo ? (
+        // Video iframe (YouTube, Vimeo)
         <div className="relative w-full h-full">
           <iframe
             src={embedUrl}
@@ -135,6 +135,30 @@ export default function VideoPlayer({ videoUrl, title, className = '', onVideoEn
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
+        </div>
+      ) : isGoogleDrive ? (
+        // Google Drive - Link diretto invece di iframe
+        <div className="relative w-full h-full bg-gray-100 flex items-center justify-center">
+          <div className="text-center p-8">
+            <div className="mb-4">
+              <svg className="w-16 h-16 mx-auto text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7.71 6.71L2 12.41l5.71 5.7 1.41-1.42L4.83 12l4.29-4.29L7.71 6.71zm8.58 0L13.7 8.12 18 12.41l-4.3 4.29 2.59 2.59L22 12.41l-5.71-5.7z"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Video su Google Drive</h3>
+            <p className="text-gray-600 mb-4">Clicca il pulsante qui sotto per aprire il video</p>
+            <a
+              href={videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+              </svg>
+              Apri Video
+            </a>
+          </div>
         </div>
       ) : (
         // Video HTML5 fallback (URL diretto)

@@ -29,14 +29,33 @@ export default function ErrorHandler() {
       }
     };
 
-    // Gestisce errori di rete (HubSpot, Google Drive, etc.)
+    // Gestisce errori di rete (HubSpot, Google Drive, Google Play, etc.)
     const handleResourceError = (event: Event) => {
       const target = event.target as HTMLElement;
       if (target && (target.tagName === 'IMG' || target.tagName === 'SCRIPT')) {
         const src = (target as HTMLImageElement).src || (target as HTMLScriptElement).src;
         if (src?.includes('forms-na1.hsforms.com') || 
             src?.includes('ogs.google.com') ||
-            src?.includes('hs-scripts.com')) {
+            src?.includes('hs-scripts.com') ||
+            src?.includes('play.google.com') ||
+            src?.includes('clients6.google.com') ||
+            src?.includes('accounts.google.com')) {
+          event.preventDefault();
+          return;
+        }
+      }
+    };
+
+    // Gestisce errori di rete per XMLHttpRequest e fetch
+    const handleNetworkError = (event: Event) => {
+      if (event.type === 'error' && event.target) {
+        const target = event.target as any;
+        if (target.url && (
+          target.url.includes('play.google.com') ||
+          target.url.includes('clients6.google.com') ||
+          target.url.includes('accounts.google.com') ||
+          target.url.includes('forms-na1.hsforms.com')
+        )) {
           event.preventDefault();
           return;
         }
@@ -47,12 +66,14 @@ export default function ErrorHandler() {
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     window.addEventListener('error', handleError);
     window.addEventListener('error', handleResourceError, true);
+    window.addEventListener('error', handleNetworkError, true);
 
     // Cleanup
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
       window.removeEventListener('error', handleError);
       window.removeEventListener('error', handleResourceError, true);
+      window.removeEventListener('error', handleNetworkError, true);
     };
   }, []);
 
