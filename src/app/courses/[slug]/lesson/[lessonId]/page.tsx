@@ -10,7 +10,7 @@ import ManualUnlockProvider from '../../../../../components/ManualUnlockProvider
 import UnlockButton from '../../../../../components/UnlockButton';
 
 import './lesson.css';
-import type { Lesson, Material, LessonNavigation, Course } from '@/types/lesson-types';
+import type { Lesson, Material, LessonNavigation } from '@/types/lesson-types';
 
 export default function LessonPage() {
   const params = useParams();

@@ -7,7 +7,7 @@ interface VideoPlayerProps {
   onVideoEnd?: () => void;
 }
 
-export default function VideoPlayer({ videoUrl, title, className = '', onVideoEnd }: VideoPlayerProps) {
+export default function VideoPlayer({ videoUrl, className = '', onVideoEnd }: VideoPlayerProps) {
 
   if (!videoUrl) {
     return (

@@ -45,7 +45,7 @@ export default function ErrorHandler() {
     // Gestisce errori di rete per XMLHttpRequest e fetch
     const handleNetworkError = (event: Event) => {
       if (event.type === 'error' && event.target) {
-        const target = event.target as any;
+        const target = event.target as XMLHttpRequest;
         if (target.url && target.url.includes('forms-na1.hsforms.com')) {
           event.preventDefault();
           return;

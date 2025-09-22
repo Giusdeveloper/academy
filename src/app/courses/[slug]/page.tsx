@@ -475,12 +475,21 @@ export default function CoursePage() {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <Link
-                      href={`/courses/${slug}/lesson/${lessons[0]?.id}`}
-                      className="bg-[#9e005c] hover:bg-[#c2185b] text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                    >
-                      Inizia il corso
-                    </Link>
+                    {lessons.length > 0 ? (
+                      <Link
+                        href={`/courses/${slug}/lesson/${lessons[0].id}`}
+                        className="bg-[#9e005c] hover:bg-[#c2185b] text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                      >
+                        Inizia il corso
+                      </Link>
+                    ) : (
+                      <button
+                        disabled
+                        className="bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg cursor-not-allowed"
+                      >
+                        Nessuna lezione disponibile
+                      </button>
+                    )}
                     <button 
                       onClick={() => setShowUnenrollModal(true)}
                       className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors"
