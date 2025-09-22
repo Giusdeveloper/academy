@@ -252,40 +252,13 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
           {videoStarted && (
             <div>
             <VideoPlayer
-              videoUrl={videoMaterial.url}
+              videoUrl={videoMaterial.html5_url || videoMaterial.url}
               title={lesson.title}
               className="w-full mb-6"
               onVideoEnd={handleVideoEnd}
-                videoType={videoMaterial.video_type as 'iframe' | 'html5' || 'iframe'}
-                html5Url={videoMaterial.html5_url}
-              />
+            />
               
-              {/* Debug: mostra i parametri passati al VideoPlayer */}
-              {(() => {
-                console.log('🔍 VideoPlayer Props:', {
-                  videoUrl: videoMaterial.url,
-                  videoType: videoMaterial.video_type,
-                  html5Url: videoMaterial.html5_url
-                });
-                return null;
-              })()}
               
-              {/* Pulsante per segnalare manualmente la fine del video (solo per video iframe, non HTML5) */}
-              {!videoEnded && videoMaterial.video_type !== 'html5' && (
-                <div className="text-center mb-6">
-                  <button
-                    onClick={handleVideoEnd}
-                    className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors font-semibold"
-                  >
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Ho finito di guardare il video
-                    </div>
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
