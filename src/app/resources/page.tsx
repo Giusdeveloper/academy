@@ -18,20 +18,19 @@ export default function ResourcesPage() {
     trackDownload 
   } = useResources();
 
-  const [featuredResources, setFeaturedResources] = useState<Resource[]>([]);
-  const [allResources, setAllResources] = useState<Resource[]>([]);
+  const [featuredResources] = useState<Resource[]>([]);
+  const [allResources] = useState<Resource[]>([]);
   const [filters, setFilters] = useState<ResourceFilters>({});
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages] = useState(1);
 
   // Carica risorse featured
   useEffect(() => {
     const loadFeaturedResources = async () => {
       try {
-        const featured = await fetchFeaturedResources(6);
-        setFeaturedResources(featured);
+        await fetchFeaturedResources();
       } catch (err) {
         console.error('Errore nel caricamento delle risorse featured:', err);
       }
@@ -44,9 +43,7 @@ export default function ResourcesPage() {
   useEffect(() => {
     const loadAllResources = async () => {
       try {
-        const response = await fetchResources(filters, undefined, currentPage, 12);
-        setAllResources(response.resources);
-        setTotalPages(response.total_pages);
+        await fetchResources();
       } catch (err) {
         console.error('Errore nel caricamento delle risorse:', err);
       }

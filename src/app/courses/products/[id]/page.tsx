@@ -200,7 +200,7 @@ export default function CoursePage() {
     if (!isEnrolled) return 'locked';
     
     const status = getLessonStatus(lesson.id);
-    const isUnlocked = isLessonUnlocked(lesson.order);
+    const isUnlocked = isLessonUnlocked(lesson.order, lessons);
     
     if (!isUnlocked) return 'locked';
     if (status === 'completed') return 'completed';

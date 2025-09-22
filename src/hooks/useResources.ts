@@ -1,403 +1,370 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/config/supabase';
 import { 
   Resource, 
   ResourceFilters, 
   ResourceSortOptions, 
-  ResourcesResponse,
   ResourceStats,
   CreateResourceData,
   UpdateResourceData
 } from '@/types/resources';
 
-export function useResources() {
+export interface UseResourcesReturn {
+  resources: Resource[];
+  featuredResources: Resource[];
+  loading: boolean;
+  error: string | null;
+  stats: ResourceStats | null;
+  filters: ResourceFilters;
+  sortBy: ResourceSortOptions;
+  searchQuery: string;
+  currentPage: number;
+  totalPages: number;
+  totalResources: number;
+  setFilters: (filters: Partial<ResourceFilters>) => void;
+  setSortBy: (sortBy: ResourceSortOptions) => void;
+  setSearchQuery: (query: string) => void;
+  setCurrentPage: (page: number) => void;
+  clearFilters: () => void;
+  fetchResources: () => Promise<void>;
+  fetchFeaturedResources: () => Promise<void>;
+  trackView: (resourceId: string) => Promise<void>;
+  trackDownload: (resourceId: string) => Promise<void>;
+  createResource: (data: CreateResourceData) => Promise<Resource | null>;
+  updateResource: (id: string, data: UpdateResourceData) => Promise<Resource | null>;
+  deleteResource: (id: string) => Promise<boolean>;
+}
+
+export function useResources(): UseResourcesReturn {
   const [resources, setResources] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [featuredResources, setFeaturedResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stats] = useState<ResourceStats | null>(null);
+  const [filters, setFiltersState] = useState<ResourceFilters>({
+    category: undefined,
+    type: undefined,
+    is_premium: undefined,
+    tags: []
+  });
+  const [sortBy, setSortBy] = useState<ResourceSortOptions>({ field: 'created_at', direction: 'desc' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResources, setTotalResources] = useState(0);
 
-  // Carica tutte le risorse
-  const fetchResources = useCallback(async (
-    filters?: ResourceFilters,
-    sort?: ResourceSortOptions,
-    page: number = 1,
-    pageSize: number = 12
-  ) => {
+  const ITEMS_PER_PAGE = 12;
+
+  // Verifica se la tabella resources esiste
+  const checkTableExists = useCallback(async (): Promise<boolean> => {
     try {
-      setLoading(true);
-      setError(null);
-
-      // Verifica se la tabella esiste
-      const { data: tableCheck, error: tableError } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .eq('table_schema', 'public')
-        .eq('table_name', 'resources')
-        .single();
-
-      if (tableError || !tableCheck) {
+      const { error } = await supabase
+        .from('resources')
+        .select('id')
+        .limit(1);
+      
+      if (error && error.code === 'PGRST116') {
         console.warn('Tabella resources non trovata. Applicare la migrazione del database.');
-        return {
-          resources: [],
-          total_count: 0,
-          page: 1,
-          page_size: pageSize,
-          total_pages: 0
-        } as ResourcesResponse;
+        return false;
+      }
+      
+      return !error;
+    } catch (err) {
+      console.warn('Errore nel controllo della tabella resources:', err);
+      return false;
+    }
+  }, []);
+
+  const fetchResources = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Verifica se la tabella esiste
+      const tableExists = await checkTableExists();
+      if (!tableExists) {
+        setResources([]);
+        setTotalResources(0);
+        setTotalPages(1);
+        setLoading(false);
+        return;
       }
 
       let query = supabase
         .from('resources')
-        .select('*')
-        .eq('is_active', true);
+        .select(`
+          *,
+          resource_views(count),
+          resource_downloads(count)
+        `);
 
       // Applica filtri
-      if (filters) {
-        if (filters.type && filters.type.length > 0) {
-          query = query.in('type', filters.type);
-        }
-        if (filters.category && filters.category.length > 0) {
-          query = query.in('category', filters.category);
-        }
-        if (filters.difficulty_level && filters.difficulty_level.length > 0) {
-          query = query.in('difficulty_level', filters.difficulty_level);
-        }
-        if (filters.language) {
-          query = query.eq('language', filters.language);
-        }
-        if (filters.is_featured !== undefined) {
-          query = query.eq('is_featured', filters.is_featured);
-        }
-        if (filters.is_premium !== undefined) {
-          query = query.eq('is_premium', filters.is_premium);
-        }
-        if (filters.tags && filters.tags.length > 0) {
-          query = query.overlaps('tags', filters.tags);
-        }
-        if (filters.search) {
-          query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-        }
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+      if (filters.type) {
+        query = query.eq('type', filters.type);
+      }
+      if (filters.is_premium !== undefined) {
+        query = query.eq('is_premium', filters.is_premium);
+      }
+      if (filters.tags && filters.tags.length > 0) {
+        query = query.overlaps('tags', filters.tags);
+      }
+
+      // Applica ricerca
+      if (searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
 
       // Applica ordinamento
-      if (sort) {
-        query = query.order(sort.field, { ascending: sort.direction === 'asc' });
-      } else {
-        query = query.order('published_at', { ascending: false });
-      }
+      query = query.order(sortBy.field, { ascending: sortBy.direction === 'asc' });
 
       // Applica paginazione
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
       query = query.range(from, to);
 
-      const { data, error: fetchError, count } = await query;
+      const { data: resourcesData, error: fetchError, count } = await query;
 
       if (fetchError) {
         throw fetchError;
       }
 
-      return {
-        resources: data || [],
-        total_count: count || 0,
-        page,
-        page_size: pageSize,
-        total_pages: Math.ceil((count || 0) / pageSize)
-      } as ResourcesResponse;
+      const processedResources = (resourcesData || []).map(resource => ({
+        ...resource,
+        view_count: resource.resource_views?.[0]?.count || 0,
+        download_count: resource.resource_downloads?.[0]?.count || 0,
+        tags: resource.tags || []
+      }));
+
+      setResources(processedResources);
+      setTotalResources(count || 0);
+      setTotalPages(Math.ceil((count || 0) / ITEMS_PER_PAGE));
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nel caricamento delle risorse';
-      setError(errorMessage);
-      throw err;
+      console.error('Errore nel caricamento delle risorse:', err);
+      setError('Errore nel caricamento delle risorse');
+      setResources([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters, sortBy, searchQuery, currentPage, checkTableExists]);
 
-  // Carica risorse featured
-  const fetchFeaturedResources = useCallback(async (limit: number = 6) => {
+  const fetchFeaturedResources = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-
       // Verifica se la tabella esiste
-      const { data: tableCheck, error: tableError } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .eq('table_schema', 'public')
-        .eq('table_name', 'resources')
-        .single();
-
-      if (tableError || !tableCheck) {
-        console.warn('Tabella resources non trovata. Applicare la migrazione del database.');
-        return [];
+      const tableExists = await checkTableExists();
+      if (!tableExists) {
+        setFeaturedResources([]);
+        return;
       }
 
-      const { data, error: fetchError } = await supabase
+      const { data: featuredData, error } = await supabase
         .from('resources')
-        .select('*')
-        .eq('is_active', true)
+        .select(`
+          *,
+          resource_views(count),
+          resource_downloads(count)
+        `)
         .eq('is_featured', true)
-        .order('published_at', { ascending: false })
-        .limit(limit);
+        .order('created_at', { ascending: false })
+        .limit(6);
 
-      if (fetchError) {
-        throw fetchError;
+      if (error) {
+        throw error;
       }
 
-      setResources(data || []);
-      return data || [];
+      const processedResources = (featuredData || []).map(resource => ({
+        ...resource,
+        view_count: resource.resource_views?.[0]?.count || 0,
+        download_count: resource.resource_downloads?.[0]?.count || 0,
+        tags: resource.tags || []
+      }));
+
+      setFeaturedResources(processedResources);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nel caricamento delle risorse featured';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
+      console.error('Errore nel caricamento delle risorse in evidenza:', err);
+      setFeaturedResources([]);
     }
-  }, []);
+  }, [checkTableExists]);
 
-  // Carica una singola risorsa
-  const fetchResource = useCallback(async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .from('resources')
-        .select('*')
-        .eq('id', id)
-        .eq('is_active', true)
-        .single();
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      return data;
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nel caricamento della risorsa';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Registra visualizzazione
   const trackView = useCallback(async (resourceId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { error } = await supabase
+      const tableExists = await checkTableExists();
+      if (!tableExists) return;
+
+      await supabase
         .from('resource_views')
         .insert({
           resource_id: resourceId,
-          user_id: user?.id || null,
-          ip_address: null, // Sarà gestito dal server
-          user_agent: navigator.userAgent,
-          session_id: null // Sarà gestito dal server
+          viewed_at: new Date().toISOString()
         });
 
-      if (error) {
-        console.error('Errore nel tracking della visualizzazione:', error);
-      }
+      // Aggiorna il contatore locale
+      setResources(prev => prev.map(resource => 
+        resource.id === resourceId 
+          ? { ...resource, view_count: resource.view_count + 1 }
+          : resource
+      ));
+
     } catch (err) {
       console.error('Errore nel tracking della visualizzazione:', err);
     }
-  }, []);
+  }, [checkTableExists]);
 
-  // Registra download
   const trackDownload = useCallback(async (resourceId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { error } = await supabase
+      const tableExists = await checkTableExists();
+      if (!tableExists) return;
+
+      await supabase
         .from('resource_downloads')
         .insert({
           resource_id: resourceId,
-          user_id: user?.id || null,
-          ip_address: null, // Sarà gestito dal server
-          user_agent: navigator.userAgent
+          downloaded_at: new Date().toISOString()
         });
 
-      if (error) {
-        console.error('Errore nel tracking del download:', error);
-      }
+      // Aggiorna il contatore locale
+      setResources(prev => prev.map(resource => 
+        resource.id === resourceId 
+          ? { ...resource, download_count: resource.download_count + 1 }
+          : resource
+      ));
+
     } catch (err) {
       console.error('Errore nel tracking del download:', err);
     }
-  }, []);
+  }, [checkTableExists]);
 
-  // Crea nuova risorsa (admin)
-  const createResource = useCallback(async (resourceData: CreateResourceData) => {
+  const createResource = useCallback(async (data: CreateResourceData): Promise<Resource | null> => {
     try {
-      setLoading(true);
-      setError(null);
+      const tableExists = await checkTableExists();
+      if (!tableExists) return null;
 
-      const { data, error: createError } = await supabase
+      const { data: newResource, error } = await supabase
         .from('resources')
-        .insert([resourceData])
+        .insert([{
+          ...data,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
         .select()
         .single();
 
-      if (createError) {
-        throw createError;
+      if (error) {
+        throw error;
       }
 
-      return data;
+      // Ricarica le risorse
+      await fetchResources();
+      await fetchFeaturedResources();
+
+      return newResource;
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nella creazione della risorsa';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
+      console.error('Errore nella creazione della risorsa:', err);
+      return null;
     }
-  }, []);
+  }, [checkTableExists, fetchResources, fetchFeaturedResources]);
 
-  // Aggiorna risorsa (admin)
-  const updateResource = useCallback(async (resourceData: UpdateResourceData) => {
+  const updateResource = useCallback(async (id: string, data: UpdateResourceData): Promise<Resource | null> => {
     try {
-      setLoading(true);
-      setError(null);
+      const tableExists = await checkTableExists();
+      if (!tableExists) return null;
 
-      const { id, ...updateData } = resourceData;
-
-      const { data, error: updateError } = await supabase
+      const { data: updatedResource, error } = await supabase
         .from('resources')
-        .update(updateData)
+        .update({
+          ...data,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id)
         .select()
         .single();
 
-      if (updateError) {
-        throw updateError;
+      if (error) {
+        throw error;
       }
 
-      return data;
+      // Ricarica le risorse
+      await fetchResources();
+      await fetchFeaturedResources();
+
+      return updatedResource;
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nell\'aggiornamento della risorsa';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
+      console.error('Errore nell\'aggiornamento della risorsa:', err);
+      return null;
     }
-  }, []);
+  }, [checkTableExists, fetchResources, fetchFeaturedResources]);
 
-  // Elimina risorsa (admin)
-  const deleteResource = useCallback(async (id: string) => {
+  const deleteResource = useCallback(async (id: string): Promise<boolean> => {
     try {
-      setLoading(true);
-      setError(null);
+      const tableExists = await checkTableExists();
+      if (!tableExists) return false;
 
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('resources')
         .delete()
         .eq('id', id);
 
-      if (deleteError) {
-        throw deleteError;
+      if (error) {
+        throw error;
       }
+
+      // Ricarica le risorse
+      await fetchResources();
+      await fetchFeaturedResources();
 
       return true;
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nell\'eliminazione della risorsa';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
+      console.error('Errore nell\'eliminazione della risorsa:', err);
+      return false;
     }
+  }, [checkTableExists, fetchResources, fetchFeaturedResources]);
+
+  const setFilters = useCallback((newFilters: Partial<ResourceFilters>) => {
+    setFiltersState(prev => ({ ...prev, ...newFilters }));
+    setCurrentPage(1); // Reset alla prima pagina quando cambiano i filtri
   }, []);
 
-  // Carica statistiche
-  const fetchStats = useCallback(async (): Promise<ResourceStats> => {
-    try {
-      // Totale risorse
-      const { count: totalResources } = await supabase
-        .from('resources')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
-
-      // Totale download
-      const { count: totalDownloads } = await supabase
-        .from('resource_downloads')
-        .select('*', { count: 'exact', head: true });
-
-      // Totale visualizzazioni
-      const { count: totalViews } = await supabase
-        .from('resource_views')
-        .select('*', { count: 'exact', head: true });
-
-      // Risorse per tipo
-      const { data: resourcesByType } = await supabase
-        .from('resources')
-        .select('type')
-        .eq('is_active', true);
-
-      const typeStats = resourcesByType?.reduce((acc, resource) => {
-        acc[resource.type] = (acc[resource.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      // Risorse per categoria
-      const { data: resourcesByCategory } = await supabase
-        .from('resources')
-        .select('category')
-        .eq('is_active', true);
-
-      const categoryStats = resourcesByCategory?.reduce((acc, resource) => {
-        acc[resource.category] = (acc[resource.category] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      // Più scaricate
-      const { data: mostDownloaded } = await supabase
-        .from('resources')
-        .select('*')
-        .eq('is_active', true)
-        .order('download_count', { ascending: false })
-        .limit(5);
-
-      // Più visualizzate
-      const { data: mostViewed } = await supabase
-        .from('resources')
-        .select('*')
-        .eq('is_active', true)
-        .order('view_count', { ascending: false })
-        .limit(5);
-
-      return {
-        total_resources: totalResources || 0,
-        total_downloads: totalDownloads || 0,
-        total_views: totalViews || 0,
-        resources_by_type: typeStats,
-        resources_by_category: categoryStats,
-        most_downloaded: mostDownloaded || [],
-        most_viewed: mostViewed || []
-      };
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Errore nel caricamento delle statistiche';
-      setError(errorMessage);
-      throw err;
-    }
+  const clearFilters = useCallback(() => {
+    setFiltersState({
+      category: undefined,
+      type: undefined,
+      is_premium: undefined,
+      tags: []
+    });
+    setSearchQuery('');
+    setCurrentPage(1);
   }, []);
 
   return {
     resources,
+    featuredResources,
     loading,
     error,
+    stats,
+    filters,
+    sortBy,
+    searchQuery,
+    currentPage,
+    totalPages,
+    totalResources,
+    setFilters,
+    setSortBy,
+    setSearchQuery,
+    setCurrentPage,
+    clearFilters,
     fetchResources,
     fetchFeaturedResources,
-    fetchResource,
     trackView,
     trackDownload,
     createResource,
     updateResource,
-    deleteResource,
-    fetchStats
+    deleteResource
   };
 }

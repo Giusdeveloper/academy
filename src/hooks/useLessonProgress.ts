@@ -160,10 +160,10 @@ export function useLessonProgress(courseId: string) {
 
       console.log('✅ markVideoWatched completato con successo');
       await fetchProgress();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Errore in markVideoWatched:', err);
       // Se l'errore è 409 (conflitto), non bloccare l'utente
-      if (err?.status === 409 || err?.code === '409' || 
+      if ((err as Record<string, unknown>)?.status === 409 || (err as Record<string, unknown>)?.code === '409' || 
           (err instanceof Error && (err.message.includes('409') || err.message.includes('conflict')))) {
         console.log('⚠️ Conflitto 409 ignorato - il progresso potrebbe essere già salvato');
         await fetchProgress(); // Ricarica il progresso
@@ -362,10 +362,10 @@ export function useLessonProgress(courseId: string) {
       console.log('✅ Progresso della lezione aggiornato');
       await fetchProgress();
       console.log('✅ Progresso ricaricato');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.log('❌ Errore generale in markQuizCompleted:', err);
       // Se l'errore è 409 (conflitto), non bloccare l'utente
-      if (err?.status === 409 || err?.code === '409' || 
+      if ((err as Record<string, unknown>)?.status === 409 || (err as Record<string, unknown>)?.code === '409' || 
           (err instanceof Error && (err.message.includes('409') || err.message.includes('conflict')))) {
         console.log('⚠️ Conflitto 409 ignorato - il progresso potrebbe essere già salvato');
         await fetchProgress(); // Ricarica il progresso

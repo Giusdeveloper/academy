@@ -298,7 +298,7 @@ export interface Database {
           lesson_id: string;
           title: string;
           description: string | null;
-          questions: any; // JSONB
+          questions: Record<string, unknown>; // JSONB
           passing_score: number;
           max_attempts: number;
           time_limit: number | null;
@@ -310,7 +310,7 @@ export interface Database {
           lesson_id: string;
           title: string;
           description?: string | null;
-          questions: any; // JSONB
+          questions: Record<string, unknown>; // JSONB
           passing_score?: number;
           max_attempts?: number;
           time_limit?: number | null;
@@ -322,7 +322,7 @@ export interface Database {
           lesson_id?: string;
           title?: string;
           description?: string | null;
-          questions?: any; // JSONB
+          questions?: Record<string, unknown>; // JSONB
           passing_score?: number;
           max_attempts?: number;
           time_limit?: number | null;
@@ -336,7 +336,7 @@ export interface Database {
           user_id: string;
           quiz_id: string;
           lesson_id: string;
-          answers: any; // JSONB
+          answers: Record<string, unknown>; // JSONB
           score: number;
           passed: boolean;
           time_spent: number | null;
@@ -350,7 +350,7 @@ export interface Database {
           user_id: string;
           quiz_id: string;
           lesson_id: string;
-          answers: any; // JSONB
+          answers: Record<string, unknown>; // JSONB
           score: number;
           passed?: boolean;
           time_spent?: number | null;
@@ -364,7 +364,7 @@ export interface Database {
           user_id?: string;
           quiz_id?: string;
           lesson_id?: string;
-          answers?: any; // JSONB
+          answers?: Record<string, unknown>; // JSONB
           score?: number;
           passed?: boolean;
           time_spent?: number | null;

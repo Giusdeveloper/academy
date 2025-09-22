@@ -6,10 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import type { 
   LessonSession, 
   VideoWatchEvent, 
-  UserCourseStats,
-  SessionTrackingData,
-  VideoEventData,
-  LessonProgressWithDetails
+  VideoEventData
 } from '@/types/database-improved';
 
 interface AdvancedLessonProgressOptions {
@@ -32,12 +29,12 @@ export function useAdvancedLessonProgress(
 
   const [user, setUser] = useState<User | null>(null);
   const [currentSession, setCurrentSession] = useState<LessonSession | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   // Refs per tracking
   const sessionStartTime = useRef<Date | null>(null);
-  const videoStartTime = useRef<number | null>(null);
+  // const _videoStartTimeRef = useRef<number | null>(null);
   const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // =============================================================================
@@ -162,6 +159,7 @@ export function useAdvancedLessonProgress(
 
     try {
       const event: VideoWatchEvent = {
+        id: crypto.randomUUID(),
         user_id: user.id,
         lesson_id: lessonId,
         session_id: currentSession?.id || null,
@@ -169,6 +167,7 @@ export function useAdvancedLessonProgress(
         current_time: eventData.currentTime,
         duration: eventData.duration || null,
         progress_percentage: eventData.progressPercentage || null,
+        timestamp: new Date().toISOString(),
         user_agent: navigator.userAgent,
         ip_address: null // Non disponibile nel browser
       };
