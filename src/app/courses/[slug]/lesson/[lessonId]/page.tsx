@@ -10,21 +10,15 @@ import ManualUnlockProvider from '../../../../../components/ManualUnlockProvider
 import UnlockButton from '../../../../../components/UnlockButton';
 
 import './lesson.css';
-
-// Definisco un'interfaccia per i dati delle lezioni usati nella navigazione
-interface LessonNavigation {
-  id: string;
-  title: string;
-  order: number;
-}
+import type { Lesson, Material, LessonNavigation, Course } from '@/types/lesson-types';
 
 export default function LessonPage() {
   const params = useParams();
   const router = useRouter();
   const { slug, lessonId } = params as { slug: string; lessonId: string };
   
-  const [lesson, setLesson] = useState<any>(null);
-  const [materials, setMaterials] = useState<any[]>([]);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [lessons, setLessons] = useState<LessonNavigation[]>([]);
   const [courseId, setCourseId] = useState<string>('');
   const [loading, setLoading] = useState(true);

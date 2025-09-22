@@ -7,23 +7,15 @@ import Link from 'next/link';
 import LessonWithQuiz from '../../../../../../components/LessonWithQuiz';
 
 import './lesson.css';
-
-
-
-// Definisco un'interfaccia per i dati delle lezioni usati nella navigazione
-interface LessonNavigation {
-  id: string;
-  title: string;
-  order: number;
-}
+import type { Lesson, Material, LessonNavigation } from '@/types/lesson-types';
 
 export default function LessonPage() {
   const params = useParams();
   const router = useRouter();
   const { id, lessonId } = params as { id: string; lessonId: string };
   
-  const [lesson, setLesson] = useState<any>(null);
-  const [materials, setMaterials] = useState<any[]>([]);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [lessons, setLessons] = useState<LessonNavigation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
