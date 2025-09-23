@@ -151,7 +151,7 @@ export function useLessonProgress(courseId: string) {
               completed: false
             });
           
-          if (fallbackError) {
+          if (fallbackError && Object.keys(fallbackError).length > 0) {
             console.error('❌ Errore anche nel fallback insert:', fallbackError);
             throw fallbackError;
           }
@@ -210,7 +210,7 @@ export function useLessonProgress(courseId: string) {
               onConflict: 'user_id,course_id,lesson_id'
             });
           
-          if (fallbackError) throw fallbackError;
+          if (fallbackError && Object.keys(fallbackError).length > 0) throw fallbackError;
         }
       } catch (err) {
         console.error('❌ Errore nell\'upsert markLessonCompleted:', err);
@@ -320,7 +320,7 @@ export function useLessonProgress(courseId: string) {
             })
             .eq('id', existingProgress.id);
           
-          if (fallbackError) {
+          if (fallbackError && Object.keys(fallbackError).length > 0) {
             console.log('❌ Errore nel salvare il progresso:', fallbackError);
             throw fallbackError;
           }
@@ -352,7 +352,7 @@ export function useLessonProgress(courseId: string) {
               completed: passed
             });
           
-          if (fallbackError) {
+          if (fallbackError && Object.keys(fallbackError).length > 0) {
             console.log('❌ Errore nel salvare il progresso:', fallbackError);
             throw fallbackError;
           }
