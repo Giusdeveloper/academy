@@ -189,15 +189,32 @@ export default function DashboardPage() {
 
   // Carica e inizializza il form HubSpot
   useEffect(() => {
+    const showFallbackMessage = () => {
+      const container = document.getElementById('hubspot-form-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center p-6 bg-gray-50 rounded-lg">
+            <p class="text-gray-600 mb-4">Form temporaneamente non disponibile.</p>
+            <p class="text-sm text-gray-500">Contatta il supporto per assistenza.</p>
+          </div>
+        `;
+      }
+    };
+
     const loadHubSpotForm = () => {
       // Controlla se HubSpot è già caricato
-      if (window.hbspt) {
-        window.hbspt.forms.create({
-          portalId: "2689406",
-          formId: "db3aee8f-27c8-40fb-ad16-815a5242d184",
-          region: "na1",
-          target: '#hubspot-form-container'
-        });
+      if (window.hbspt && window.hbspt.forms) {
+        try {
+          window.hbspt.forms.create({
+            portalId: "2689406",
+            formId: "db3aee8f-27c8-40fb-ad16-815a5242d184",
+            region: "na1",
+            target: '#hubspot-form-container'
+          });
+        } catch (error) {
+          console.warn('Errore nella creazione del form HubSpot (già caricato):', error);
+          showFallbackMessage();
+        }
         return;
       }
 
@@ -210,7 +227,7 @@ export default function DashboardPage() {
       }
 
       const script = document.createElement('script');
-      script.src = '//js.hsforms.net/forms/embed/v2.js';
+      script.src = 'https://js.hsforms.net/forms/embed/v2.js';
       script.charset = 'utf-8';
       script.type = 'text/javascript';
       script.async = true;
@@ -218,25 +235,29 @@ export default function DashboardPage() {
       script.onload = () => {
         // Aspetta un po' per assicurarsi che HubSpot sia completamente caricato
         setTimeout(() => {
-          if (window.hbspt) {
-            window.hbspt.forms.create({
-              portalId: "2689406",
-              formId: "db3aee8f-27c8-40fb-ad16-815a5242d184",
-              region: "na1",
-              target: '#hubspot-form-container'
-            });
+          try {
+            if (window.hbspt && window.hbspt.forms) {
+              window.hbspt.forms.create({
+                portalId: "2689406",
+                formId: "db3aee8f-27c8-40fb-ad16-815a5242d184",
+                region: "na1",
+                target: '#hubspot-form-container'
+              });
+            } else {
+              throw new Error('HubSpot non disponibile dopo il caricamento');
+            }
+          } catch (error) {
+            console.warn('Errore nella creazione del form HubSpot:', error);
+            showFallbackMessage();
           }
         }, 500);
       };
 
-      script.onerror = () => {
-        console.error('Errore nel caricamento dello script HubSpot');
-        // Mostra un messaggio di fallback
-        const container = document.getElementById('hubspot-form-container');
-        if (container) {
-          container.innerHTML = '<p class="text-center text-gray-600">Form temporaneamente non disponibile. Riprova più tardi.</p>';
-        }
+      script.onerror = (error) => {
+        console.warn('Errore nel caricamento dello script HubSpot:', error);
+        showFallbackMessage();
       };
+
 
       document.head.appendChild(script);
     };
