@@ -19,7 +19,7 @@ export default function LessonPage() {
   
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [lessons, setLessons] = useState<LessonNavigation[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [courseId, setCourseId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
