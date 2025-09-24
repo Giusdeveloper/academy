@@ -75,7 +75,7 @@ export default function LessonPage() {
           .order('order');
 
         if (lessonsError) throw lessonsError;
-        setLessons(lessonsData as LessonNavigation[] || []);
+        setLessons(lessonsData as Lesson[] || []);
 
       } catch (err) {
         console.error('Errore nel caricamento dei dati:', err);
