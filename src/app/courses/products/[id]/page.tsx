@@ -204,7 +204,6 @@ export default function CoursePage() {
     
     if (!isUnlocked) return 'locked';
     if (status === 'completed') return 'completed';
-    if (status === 'video_watched') return 'video_watched';
     return 'unlocked';
   };
 
@@ -344,8 +343,6 @@ export default function CoursePage() {
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
                         status === 'completed' 
                           ? 'bg-green-500 text-white' 
-                          : status === 'video_watched'
-                          ? 'bg-yellow-500 text-white'
                           : status === 'locked'
                           ? 'bg-gray-300 text-gray-500'
                           : index === 0 
@@ -360,23 +357,18 @@ export default function CoursePage() {
                             ? 'text-gray-400' 
                             : status === 'completed'
                             ? 'text-white'
-                            : status === 'video_watched'
+                            : index === 0
                             ? 'text-white'
-                            : index === 0 
-                            ? 'text-white' 
                             : 'text-gray-900'
                         }`}>
                           {lesson.title}
                         </h3>
-                        {status === 'video_watched' && (
+                        {status === 'unlocked' && (
                           <p className="text-xs text-yellow-600 mt-1">Quiz richiesto</p>
                         )}
                       </div>
                       {status === 'completed' && (
                         <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      )}
-                      {status === 'video_watched' && (
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
                       )}
                       {status === 'locked' && (
                         <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

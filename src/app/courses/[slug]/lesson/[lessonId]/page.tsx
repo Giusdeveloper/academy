@@ -5,12 +5,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import LessonWithQuiz from '../../../../../components/LessonWithQuiz';
-import LessonNavigation from '../../../../../components/LessonNavigation';
+import LessonNavigationComponent from '../../../../../components/LessonNavigation';
 import ManualUnlockProvider from '../../../../../components/ManualUnlockProvider';
 import UnlockButton from '../../../../../components/UnlockButton';
 
 import './lesson.css';
-import type { Lesson, Material, LessonNavigation } from '@/types/lesson-types';
+import type { Lesson, Material } from '@/types/lesson-types';
 
 export default function LessonPage() {
   const params = useParams();
@@ -178,7 +178,7 @@ export default function LessonPage() {
 
               {/* Lista lezioni */}
               <div className="space-y-2 mb-6 max-h-96 overflow-y-auto">
-                <LessonNavigation 
+                <LessonNavigationComponent 
                   lessons={lessons || []}
                   currentLessonId={lessonId}
                   courseId={courseId}

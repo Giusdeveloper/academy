@@ -44,7 +44,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://js.hsforms.net",
               "img-src 'self' data: https: https://forms-na1.hsforms.com",
               "font-src 'self' https:",
-              "connect-src 'self' https://*.supabase.co https://*.supabase.com https://forms-na1.hsforms.com",
+              "connect-src 'self' https://*.supabase.co https://*.supabase.com https://forms-na1.hsforms.com https://forms.hsforms.com https://hubspot-forms-static-embed.s3.amazonaws.com",
               "media-src 'self' https:",
             ].join('; '),
           },

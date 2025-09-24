@@ -19,24 +19,7 @@ export default function Navbar() {
       setLoading(false);
     });
 
-    // Per il testing, controlla se c'è un utente di test nel localStorage
-    if (typeof window !== 'undefined') {
-      const testUser = localStorage.getItem('test-user');
-      if (testUser) {
-        try {
-          const parsedUser = JSON.parse(testUser);
-          setUser(parsedUser);
-          setLoading(false);
-        } catch (err) {
-          console.log('Errore nel parsing dell\'utente di test:', err);
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    } else {
-      setLoading(false);
-    }
+    setLoading(false);
 
     return () => {
       subscription.unsubscribe();
@@ -45,10 +28,6 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    // Pulisci anche l'utente di test dal localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('test-user');
-    }
     setUser(null);
     router.push('/login');
   };

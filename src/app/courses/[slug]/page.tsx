@@ -585,12 +585,12 @@ export default function CoursePage() {
                           status === 'locked' 
                             ? 'text-gray-400' 
                             : status === 'completed'
-                            ? 'text-white'
+                            ? 'text-black'
                             : status === 'video_watched'
-                            ? 'text-white'
+                            ? 'text-black'
                             : index === 0 
                             ? 'text-white' 
-                            : 'text-gray-900'
+                            : 'text-black'
                         }`}>
                           {lesson.title}
                         </h3>
@@ -623,7 +623,7 @@ export default function CoursePage() {
                   ) : (
                     <div
                       key={lesson.id}
-                      className="lesson-item block opacity-60 cursor-not-allowed"
+                      className="lesson-item block cursor-not-allowed"
                       title="Lezione bloccata - Completa la prima lezione per sbloccare"
                     >
                       <LessonContent />

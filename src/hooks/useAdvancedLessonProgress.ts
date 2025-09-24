@@ -105,7 +105,7 @@ export function useAdvancedLessonProgress(
     } else {
       return 'desktop';
     }
-  }, []); // navigator.userAgent è statico, nessuna dipendenza necessaria
+  }, []); // navigator.userAgent è statico, nessuna dipendenza necessaria    
 
   const startLessonSession = useCallback(async (lessonId: string) => {
     if (!user || !enableSessionTracking) return null;

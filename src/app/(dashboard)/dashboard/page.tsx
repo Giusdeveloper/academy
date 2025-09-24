@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { supabase } from "@/config/supabase";
 import type { User } from '@supabase/supabase-js';
 import "./dashboard.css";
@@ -22,8 +23,9 @@ declare global {
   }
 }
 
-// Interfaccia per i corsi
-interface Course {
+
+// Interfaccia per i corsi dell'utente con progresso
+interface UserCourse {
   id: string;
   slug: string;
   title: string;
@@ -36,6 +38,12 @@ interface Course {
   ects_max: number | null;
   image_url: string | null;
   created_at: string;
+  progress: {
+    total_lessons: number;
+    completed_lessons: number;
+    progress_percentage: number;
+    last_accessed: string | null;
+  };
 }
 
 // Interfaccia per le notifiche
@@ -49,7 +57,7 @@ interface Notification {
 export default function DashboardPage() {
   // Stato per l'utente autenticato
   const [user, setUser] = useState<User | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLoading, setUserLoading] = useState(true);
@@ -157,26 +165,111 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  // Recupera i corsi reali dal database
+  // Recupera i corsi dell'utente con progresso
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .limit(3); // Mostra solo i primi 3 corsi
+    const fetchUserCourses = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-        if (error) throw error;
-        setCourses(data || []);
+      try {
+        // Recupera gli ordini completati dell'utente per ottenere i corsi a cui è iscritto
+        const { data: orders, error: ordersError } = await supabase
+          .from('orders')
+          .select(`
+            course_id,
+            course:course_id (
+              id,
+              slug,
+              title,
+              description,
+              category,
+              level,
+              language,
+              price,
+              duration_hours,
+              ects_max,
+              image_url,
+              created_at
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'COMPLETED');
+
+        if (ordersError) throw ordersError;
+
+        if (!orders || orders.length === 0) {
+          setUserCourses([]);
+          setLoading(false);
+          return;
+        }
+
+        // Per ogni corso, calcola il progresso
+        const coursesWithProgress = await Promise.all(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orders.map(async (order: any) => {
+            const course = order.course;
+            if (!course) return null;
+
+            // Conta le lezioni totali del corso
+            const { data: lessons, error: lessonsError } = await supabase
+              .from('lessons')
+              .select('id')
+              .eq('course_id', course.id);
+
+            if (lessonsError) throw lessonsError;
+
+            // Conta le lezioni completate dall'utente
+            const { data: progress, error: progressError } = await supabase
+              .from('progress')
+              .select('lesson_id')
+              .eq('user_id', user.id)
+              .eq('course_id', course.id)
+              .eq('completed', true);
+
+            if (progressError) throw progressError;
+
+            const totalLessons = lessons?.length || 0;
+            const completedLessons = progress?.length || 0;
+            const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+            // Trova l'ultima lezione a cui l'utente ha avuto accesso
+            const { data: lastAccess } = await supabase
+              .from('progress')
+              .select('last_accessed_at')
+              .eq('user_id', user.id)
+              .eq('course_id', course.id)
+              .order('last_accessed_at', { ascending: false })
+              .limit(1)
+              .single();
+
+            return {
+              ...course,
+              progress: {
+                total_lessons: totalLessons,
+                completed_lessons: completedLessons,
+                progress_percentage: progressPercentage,
+                last_accessed: lastAccess?.last_accessed_at || null
+              }
+            };
+          })
+        );
+
+        // Filtra i corsi null e imposta lo stato
+        const validCourses = coursesWithProgress.filter(course => course !== null) as UserCourse[];
+        setUserCourses(validCourses);
+
       } catch (err) {
-        console.error('Errore nel caricamento dei corsi:', err);
+        console.error('Errore nel caricamento dei corsi dell\'utente:', err);
+        setUserCourses([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourses();
-  }, []);
+    fetchUserCourses();
+  }, [user]);
 
   // Genera notifiche quando l'utente è disponibile
   useEffect(() => {
@@ -290,17 +383,19 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* My Courses */}
           <section className="md:col-span-2 bg-white rounded-2xl border border-[#e5eaf1] p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-[#183a5a] mb-4">I Nostri Corsi</h2>
+            <h2 className="text-xl font-semibold text-[#183a5a] mb-4">
+              {userCourses.length > 0 ? "I Miei Corsi" : "I Nostri Corsi"}
+            </h2>
             {loading ? (
               <div className="flex justify-center items-center py-8">
                 <div className="text-[#183a5a]">Caricamento corsi...</div>
               </div>
-            ) : courses.length > 0 ? (
+            ) : userCourses.length > 0 ? (
               <div className="flex flex-col md:flex-row gap-6">
-                {courses.map((course) => (
+                {userCourses.map((course) => (
                   <div key={course.id} className="flex-1 min-w-[180px] bg-[#f6fafd] rounded-xl overflow-hidden shadow border border-[#e5eaf1] flex flex-col">
                     <Image 
-                      src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=128&q=80"
+                      src={course.image_url || "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=128&q=80"}
                       alt={course.title} 
                       width={400}
                       height={128}
@@ -317,17 +412,43 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-2 mb-1">
                         <div className="progress-bar-container">
-                          <div className="progress-bar progress-0"></div>
+                          <div 
+                            className={`progress-bar progress-${course.progress.progress_percentage}`}
+                          ></div>
                         </div>
-                        <span className="text-xs text-[#183a5a] font-medium min-w-[40px] text-right">0% complete</span>
+                        <span className="text-xs text-[#183a5a] font-medium min-w-[40px] text-right">
+                          {course.progress.progress_percentage}% complete
+                        </span>
                       </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {course.progress.completed_lessons} di {course.progress.total_lessons} lezioni completate
+                      </div>
+                      {course.progress.last_accessed && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          Ultimo accesso: {new Date(course.progress.last_accessed).toLocaleDateString('it-IT')}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="text-center text-gray-600 py-8">
-                Nessun corso disponibile al momento.
+                <div className="mb-4">
+                  <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-[#183a5a] mb-2">Non sei ancora iscritto a nessun corso</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Esplora i nostri corsi disponibili e inizia il tuo percorso di apprendimento.
+                </p>
+                <Link 
+                  href="/courses" 
+                  className="inline-flex items-center px-4 py-2 bg-[#183a5a] text-white rounded-lg hover:bg-[#0f2a42] transition-colors"
+                >
+                  Esplora i Corsi
+                </Link>
               </div>
             )}
           </section>
