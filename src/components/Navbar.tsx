@@ -1,36 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/config/supabase';
-import type { User } from '@supabase/supabase-js';
+import { useSession } from 'next-auth/react';
+import LoginButton from './auth/LoginButton';
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
   const router = useRouter();
-
-  useEffect(() => {
-    // Controlla lo stato dell'autenticazione
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    setLoading(false);
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []); // Rimuovo 'user' dalle dipendenze per evitare il loop infinito
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    router.push('/login');
-  };
 
   return (
     <nav className="bg-[#17334F] w-full">
@@ -51,35 +29,32 @@ export default function Navbar() {
             <Link href="/" className="text-white/90 hover:text-white font-medium">Home</Link>
             <Link href="/courses" className="text-white/70 hover:text-white font-medium">Corsi</Link>
             <Link href="/workshops" className="text-white/70 hover:text-white font-medium">Workshop</Link>
+            <Link href="/startup-award" className="text-white/70 hover:text-white font-medium">Startup Award</Link>
             <Link href="/resources" className="text-white/70 hover:text-white font-medium">Risorse</Link>
             <Link href="/about" className="text-white/70 hover:text-white font-medium">Chi siamo</Link>
             <Link href="/contacts" className="text-white/70 hover:text-white font-medium">Contatti</Link>
           </div>
         </div>
+
         {/* CTA Area Riservata / Login */}
-        {loading ? (
+        {status === 'loading' ? (
           <div className="ml-4 px-6 py-2 text-white">Caricamento...</div>
-        ) : user ? (
+        ) : session ? (
           <div className="ml-4 flex items-center gap-4">
-            <span className="text-white">{user.user_metadata?.name || user.email}</span>
+            <span className="text-white">{session.user?.name || session.user?.email}</span>
             <button
               className="px-4 py-2 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-sm"
               onClick={() => router.push('/dashboard')}
             >
               Area Riservata
             </button>
-            <button
-              className="px-4 py-2 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-sm"
-              onClick={handleSignOut}
-            >
-              Esci
-            </button>
+            <LoginButton showUserInfo={false} />
           </div>
         ) : (
           <div className="ml-4 flex items-center gap-4">
             <button
               className="px-4 py-2 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-sm"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/auth/signin')}
             >
               Accedi
             </button>
@@ -94,4 +69,4 @@ export default function Navbar() {
       </div>
     </nav>
   );
-} 
+}

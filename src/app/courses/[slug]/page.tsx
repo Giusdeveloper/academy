@@ -2,7 +2,7 @@
 
 import { supabase } from '@/config/supabase';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
@@ -11,6 +11,7 @@ import UnenrollModal from '@/components/UnenrollModal';
 import LessonPreviewModal from '@/components/LessonPreviewModal';
 import VideoPlayer from '@/components/VideoPlayer';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
+import { trackPhase1Enrollment, checkAndUpdatePhase1Completion } from '@/lib/startup-award-tracking';
 import './course-layout.css';
 
 // Immagine di default per i corsi - versione ad alta risoluzione
@@ -72,6 +73,9 @@ export default function CoursePage() {
 
   // Hook per il progresso delle lezioni
   const { progress, isLessonUnlocked } = useLessonProgress(course?.id || '');
+
+  // Ref per evitare chiamate multiple al controllo completamento
+  const completionCheckRef = useRef(false);
 
   // Controllo autenticazione
   useEffect(() => {
@@ -187,6 +191,62 @@ export default function CoursePage() {
     setIsEnrolled(enrolledCourses.includes(course?.id));
   }, [course?.id]);
 
+  // Calcola il numero di lezioni completate (per evitare loop nel useEffect)
+  const completedLessonsCount = progress.filter(p => p.completed).length;
+  const allLessonsCompleted = lessons.length > 0 && progress.length > 0 && completedLessonsCount === lessons.length;
+
+  // Verifica completamento corso per Startup Award
+  useEffect(() => {
+    const checkCourseCompletion = async () => {
+      if (!course || !user || course.slug !== 'finanziamento-aziendale') {
+        completionCheckRef.current = false;
+        return;
+      }
+
+      // Verifica se tutte le lezioni sono completate
+      if (!allLessonsCompleted || !user.email || !user.id) {
+        // Se non tutte le lezioni sono completate, reset il flag
+        completionCheckRef.current = false;
+        return;
+      }
+
+      // Evita chiamate multiple se abbiamo già controllato per questo stato di completamento
+      if (completionCheckRef.current) {
+        return;
+      }
+
+      // Verifica prima se il corso è già completato nel database
+      try {
+        const { data: existingProgress } = await supabase
+          .from('startup_award_progress')
+          .select('phase1_completed_at')
+          .eq('user_email', user.email)
+          .eq('course_id', course.id)
+          .single();
+
+        // Se è già completato, non chiamare di nuovo la funzione
+        if (existingProgress?.phase1_completed_at) {
+          completionCheckRef.current = true;
+          return;
+        }
+
+        // Imposta il flag prima di chiamare la funzione per evitare chiamate multiple
+        completionCheckRef.current = true;
+
+        const isCompleted = await checkAndUpdatePhase1Completion(user.email, course.id, user.id);
+        if (isCompleted) {
+          console.log('✅ Corso completato! Fase 1 completata. Pronto per Fase 2.');
+        }
+      } catch (error) {
+        console.error('Errore nel verificare completamento:', error);
+        completionCheckRef.current = false; // Reset in caso di errore
+      }
+    };
+
+    checkCourseCompletion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course?.id, course?.slug, user?.id, user?.email, allLessonsCompleted]);
+
   // Funzione helper per ottenere il video di una lezione
   const getVideoForLesson = (lessonId: string) => {
     return materials.find(material => 
@@ -247,13 +307,28 @@ export default function CoursePage() {
     setShowUnenrollModal(false);
   };
 
-  const handleEnrollConfirm = () => {
-    if (course) {
+  const handleEnrollConfirm = async () => {
+    if (course && user) {
       const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
       enrolledCourses.push(course.id);
       localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
       setIsEnrolled(true);
       setShowModal(false);
+
+      // Traccia l'iscrizione se viene da startup-award e il corso è finanziamento-aziendale
+      if (course.slug === 'finanziamento-aziendale') {
+        const fromStartupAward = sessionStorage.getItem('registerFrom') === 'startup-award';
+        if (fromStartupAward && user.email) {
+          try {
+            await trackPhase1Enrollment(user.email, course.id);
+            console.log('✅ Iscrizione Fase 1 tracciata per Startup Award');
+            // Rimuovi il flag solo dopo che l'iscrizione è stata tracciata con successo
+            sessionStorage.removeItem('registerFrom');
+          } catch (error) {
+            console.error('❌ Errore nel tracciare iscrizione:', error);
+          }
+        }
+      }
     }
   };
 

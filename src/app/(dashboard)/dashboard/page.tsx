@@ -174,32 +174,118 @@ export default function DashboardPage() {
       }
 
       try {
-        // Recupera gli ordini completati dell'utente per ottenere i corsi a cui è iscritto
-        const { data: orders, error: ordersError } = await supabase
-          .from('orders')
-          .select(`
-            course_id,
-            course:course_id (
-              id,
-              slug,
-              title,
-              description,
-              category,
-              level,
-              language,
-              price,
-              duration_hours,
-              ects_max,
-              image_url,
-              created_at
-            )
-          `)
-          .eq('user_id', user.id)
-          .eq('status', 'COMPLETED');
+        // Recupera i corsi da due fonti:
+        // 1. Ordini completati
+        // 2. Corsi dove l'utente ha dei progressi (per includere corsi iscritti tramite Startup Award o altri metodi)
+        
+        const [ordersResult, progressResult] = await Promise.all([
+          // Recupera gli ordini completati
+          supabase
+            .from('orders')
+            .select(`
+              course_id,
+              course:course_id (
+                id,
+                slug,
+                title,
+                description,
+                category,
+                level,
+                language,
+                price,
+                duration_hours,
+                ects_max,
+                image_url,
+                created_at
+              )
+            `)
+            .eq('user_id', user.id)
+            .eq('status', 'COMPLETED'),
+          
+          // Recupera i corsi unici dove l'utente ha dei progressi
+          supabase
+            .from('progress')
+            .select(`
+              course_id,
+              course:course_id (
+                id,
+                slug,
+                title,
+                description,
+                category,
+                level,
+                language,
+                price,
+                duration_hours,
+                ects_max,
+                image_url,
+                created_at
+              )
+            `)
+            .eq('user_id', user.id)
+        ]);
 
-        if (ordersError) throw ordersError;
+        if (ordersResult.error) throw ordersResult.error;
+        if (progressResult.error) throw progressResult.error;
 
-        if (!orders || orders.length === 0) {
+        // Combina i corsi da ordini e progressi, evitando duplicati
+
+        type Course = {
+          id: string;
+          slug: string;
+          title: string;
+          description: string;
+          category: string;
+          level: string;
+          language: string;
+          price: number;
+          duration_hours: number;
+          ects_max: number;
+          image_url: string;
+          created_at: string;
+        };
+
+        type Order = {
+          course_id: string;
+          course: Course;
+        };
+
+        const courseIds = new Set<string>();
+        const coursesMap = new Map<string, Course>();
+
+        // Aggiungi corsi da ordini
+        if (ordersResult.data) {
+          (ordersResult.data as unknown as Order[]).forEach((order: Order) => {
+            if (order.course && order.course.id) {
+              courseIds.add(order.course.id);
+              coursesMap.set(order.course.id, order.course);
+            }
+          });
+        }
+
+        // Aggiungi corsi da progressi (solo se non già presenti)
+        if (progressResult.data) {
+          (progressResult.data as Array<{ course_id: string; course: Course[] }>).forEach((progress) => {
+            // progress.course is actually an array of Course, not a single Course object
+            if (
+              Array.isArray(progress.course) &&
+              progress.course.length > 0
+            ) {
+              progress.course.forEach((course) => {
+                if (
+                  course &&
+                  course.id &&
+                  !courseIds.has(course.id)
+                ) {
+                  courseIds.add(course.id);
+                  coursesMap.set(course.id, course);
+                }
+              });
+            }
+          });
+        }
+
+        if (coursesMap.size === 0) {
           setUserCourses([]);
           setLoading(false);
           return;
@@ -207,9 +293,7 @@ export default function DashboardPage() {
 
         // Per ogni corso, calcola il progresso
         const coursesWithProgress = await Promise.all(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          orders.map(async (order: any) => {
-            const course = order.course;
+          Array.from(coursesMap.values()).map(async (course: Course) => {
             if (!course) return null;
 
             // Conta le lezioni totali del corso

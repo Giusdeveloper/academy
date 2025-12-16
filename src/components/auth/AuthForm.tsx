@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/config/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import './AuthForm.css';
 
 type AuthMode = 'login' | 'register';
@@ -11,12 +11,25 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [resendEmail, setResendEmail] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Controlla se l'utente arriva da startup-award
+  useEffect(() => {
+    if (mode === 'register' && typeof window !== 'undefined') {
+      const fromParam = searchParams?.get('from');
+      if (fromParam === 'startup-award') {
+        // Salva in sessionStorage per usarlo dopo la verifica email
+        sessionStorage.setItem('registerFrom', 'startup-award');
+      }
+    }
+  }, [mode, searchParams]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +40,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
     try {
       if (mode === 'register') {
-        console.log('🔐 Tentativo di registrazione con:', { email, name });
+        console.log('🔐 Tentativo di registrazione con:', { email, name, lastName });
         
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -35,6 +48,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           options: {
             data: {
               name,
+              last_name: lastName,
             },
             emailRedirectTo: `${window.location.origin}/verify-email`,
           },
@@ -61,7 +75,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           }
           
           console.log('✅ Email già verificata, reindirizzando...');
-          router.push('/dashboard');
+          
+          // Controlla se l'utente arriva da startup-award
+          const fromStartupAward = sessionStorage.getItem('registerFrom') === 'startup-award';
+          if (fromStartupAward) {
+            // NON rimuovere il flag qui - verrà rimosso dopo l'iscrizione al corso
+            // Reindirizza al corso finanziamento-aziendale
+            router.push('/courses/finanziamento-aziendale');
+          } else {
+            router.push('/dashboard');
+          }
         }
       } else {
         console.log('🔐 Tentativo di login con:', { email, password: '***' });
@@ -98,7 +121,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         
         if (data.user) {
           console.log('✅ Login riuscito, reindirizzando...');
-          router.push('/dashboard');
+          
+          // Controlla se l'utente arriva da startup-award
+          const fromStartupAward = typeof window !== 'undefined' && sessionStorage.getItem('registerFrom') === 'startup-award';
+          if (fromStartupAward) {
+            // NON rimuovere il flag qui - verrà rimosso dopo l'iscrizione al corso
+            // Reindirizza al corso finanziamento-aziendale
+            router.push('/courses/finanziamento-aziendale');
+          } else {
+            router.push('/dashboard');
+          }
         }
       }
     } catch (error: unknown) {
@@ -149,20 +181,36 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         
         <form onSubmit={handleSubmit}>
           {mode === 'register' && (
-            <div className="form-group">
-              <label htmlFor="name" className="form-label">
-                Nome
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="form-input"
-                autoComplete="given-name"
-                required
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <label htmlFor="name" className="form-label">
+                  Nome
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="form-input"
+                  autoComplete="given-name"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="lastName" className="form-label">
+                  Cognome
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="form-input"
+                  autoComplete="family-name"
+                  required
+                />
+              </div>
+            </>
           )}
 
           <div className="form-group">

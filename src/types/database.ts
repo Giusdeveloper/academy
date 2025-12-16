@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           id: string
           name: string | null
+          last_name: string | null
           email: string
           email_verified: string | null
           image: string | null
@@ -24,6 +25,7 @@ export interface Database {
         Insert: {
           id?: string
           name?: string | null
+          last_name?: string | null
           email: string
           email_verified?: string | null
           image?: string | null
@@ -35,6 +37,7 @@ export interface Database {
         Update: {
           id?: string
           name?: string | null
+          last_name?: string | null
           email?: string
           email_verified?: string | null
           image?: string | null

@@ -8,6 +8,7 @@ import './verify-email.css';
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
+  const [redirectTo, setRedirectTo] = useState<'dashboard' | 'course'>('dashboard');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -93,11 +94,25 @@ function VerifyEmailContent() {
           if (data.user && data.user.email_confirmed_at) {
             console.log('✅ Email verificata con successo tramite session!');
             setStatus('success');
-            setMessage('Email verificata con successo! Ora puoi accedere al tuo account.');
             
-            // Reindirizza alla dashboard dopo 3 secondi
+            // Controlla se l'utente arriva da startup-award
+            const fromStartupAward = typeof window !== 'undefined' && sessionStorage.getItem('registerFrom') === 'startup-award';
+            if (fromStartupAward) {
+              setMessage('Email verificata con successo! Ora puoi accedere al corso "Finanziamento Aziendale".');
+              setRedirectTo('course');
+            } else {
+              setMessage('Email verificata con successo! Ora puoi accedere al tuo account.');
+            }
+            
+            // Reindirizza dopo 3 secondi
             setTimeout(() => {
-              router.push('/dashboard');
+              if (fromStartupAward) {
+                // NON rimuovere il flag qui - verrà rimosso dopo l'iscrizione al corso
+                // Reindirizza al corso finanziamento-aziendale
+                router.push('/courses/finanziamento-aziendale');
+              } else {
+                router.push('/dashboard');
+              }
             }, 3000);
             return;
           }
@@ -122,11 +137,25 @@ function VerifyEmailContent() {
           if (data.user) {
             console.log('✅ Email verificata con successo tramite OTP!');
             setStatus('success');
-            setMessage('Email verificata con successo! Ora puoi accedere al tuo account.');
             
-            // Reindirizza alla dashboard dopo 3 secondi
+            // Controlla se l'utente arriva da startup-award
+            const fromStartupAward = typeof window !== 'undefined' && sessionStorage.getItem('registerFrom') === 'startup-award';
+            if (fromStartupAward) {
+              setMessage('Email verificata con successo! Ora puoi accedere al corso "Finanziamento Aziendale".');
+              setRedirectTo('course');
+            } else {
+              setMessage('Email verificata con successo! Ora puoi accedere al tuo account.');
+            }
+            
+            // Reindirizza dopo 3 secondi
             setTimeout(() => {
-              router.push('/dashboard');
+              if (fromStartupAward) {
+                // NON rimuovere il flag qui - verrà rimosso dopo l'iscrizione al corso
+                // Reindirizza al corso finanziamento-aziendale
+                router.push('/courses/finanziamento-aziendale');
+              } else {
+                router.push('/dashboard');
+              }
             }, 3000);
             return;
           }
@@ -177,7 +206,9 @@ function VerifyEmailContent() {
                 {message}
               </p>
               <p className="verify-redirect">
-                Verrai reindirizzato automaticamente alla dashboard...
+                {redirectTo === 'course' 
+                  ? 'Verrai reindirizzato automaticamente al corso...'
+                  : 'Verrai reindirizzato automaticamente alla dashboard...'}
               </p>
             </>
           )}

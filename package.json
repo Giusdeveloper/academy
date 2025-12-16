@@ -10,13 +10,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth/supabase-adapter": "^1.10.0",
     "@prisma/client": "^6.8.2",
     "@supabase/supabase-js": "^2.49.8",
+    "axios": "^1.12.2",
     "next": "15.1.8",
     "next-auth": "^4.24.11",
     "prisma": "^6.8.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
