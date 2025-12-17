@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/config/supabase';
 import Link from 'next/link';
 
@@ -21,7 +21,6 @@ interface User {
 
 export default function CheckoutPage() {
   const params = useParams();
-  const router = useRouter();
   const { slug } = params as { slug: string };
 
   const [course, setCourse] = useState<Course | null>(null);
@@ -169,9 +168,9 @@ export default function CheckoutPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Email
                     </label>
-                    <p className="text-gray-900">{user.email}</p>
+                    <p className="text-gray-900">{user?.email || 'N/A'}</p>
                   </div>
-                  {user.name && (
+                  {user?.name && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Nome
@@ -213,7 +212,7 @@ export default function CheckoutPage() {
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                Cliccando su "Paga", sarai reindirizzato a Revolut per completare il pagamento in modo sicuro.
+                Cliccando su &quot;Paga&quot;, sarai reindirizzato a Revolut per completare il pagamento in modo sicuro.
               </p>
             </div>
 

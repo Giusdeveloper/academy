@@ -23,7 +23,7 @@ export default function PaymentCancelPage() {
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
           <p className="text-yellow-800 text-sm">
-            Se hai cambiato idea, puoi sempre tornare al corso e completare l'acquisto.
+            Se hai cambiato idea, puoi sempre tornare al corso e completare l&apos;acquisto.
           </p>
         </div>
 

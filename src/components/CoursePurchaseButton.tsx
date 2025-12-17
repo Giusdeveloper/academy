@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface CoursePurchaseButtonProps {
-  courseId: string;
   courseSlug: string;
   price: number;
   isEnrolled?: boolean;
@@ -13,7 +12,6 @@ interface CoursePurchaseButtonProps {
 }
 
 export default function CoursePurchaseButton({ 
-  courseId, 
   courseSlug, 
   price, 
   isEnrolled = false,

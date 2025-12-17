@@ -91,6 +91,7 @@ class RevolutService {
   verifyWebhookSignature(payload: string, signature: string): boolean {
     // Implementazione della verifica della firma del webhook
     // Revolut fornisce una firma HMAC per verificare l'autenticità
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const crypto = require('crypto');
     const expectedSignature = crypto
       .createHmac('sha256', REVOLUT_CONFIG.WEBHOOK_SECRET || '')

@@ -29,7 +29,7 @@ export interface RevolutPaymentRequest {
   customer_name?: string;
   return_url: string;
   webhook_url: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface RevolutPaymentResponse {

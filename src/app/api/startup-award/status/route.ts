@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/config/supabase';
 import { getStartupAwardStatus } from '@/lib/startup-award-tracking';
 
 export async function GET(request: NextRequest) {

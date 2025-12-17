@@ -69,13 +69,13 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, user }) {
       // Aggiungi l'ID utente alla sessione
-      if (session.user && user) {
-        session.user.id = user.id;
+      if (session.user && user && 'id' in user) {
+        session.user.id = user.id as string;
       }
       return session;
     },
     
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       // Logica personalizzata per il sign-in
       console.log('User signing in:', user.email);
       return true;
