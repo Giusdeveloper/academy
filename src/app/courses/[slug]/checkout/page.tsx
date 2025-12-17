@@ -212,6 +212,7 @@ export default function CheckoutPage() {
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
+                {/* eslint-disable-next-line react/no-unescaped-entities */}
                 Cliccando su "Paga", sarai reindirizzato a Revolut per completare il pagamento in modo sicuro.
               </p>
             </div>
