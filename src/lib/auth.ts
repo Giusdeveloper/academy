@@ -67,10 +67,18 @@ export const authOptions: NextAuthOptions = {
   } : {}),
 
   callbacks: {
-    async session({ session, user }) {
-      // Aggiungi l'ID utente alla sessione
-      if (session.user && user && 'id' in user) {
-        session.user.id = user.id as string;
+    async jwt({ token, user }) {
+      // Quando l'utente fa login, aggiungi l'ID al token
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    
+    async session({ session, token }) {
+      // Aggiungi l'ID utente alla sessione dal token JWT
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
       }
       return session;
     },
