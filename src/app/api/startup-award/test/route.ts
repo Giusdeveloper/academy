@@ -54,16 +54,43 @@ export async function GET(request: NextRequest) {
       }
 
       case 'check_completion': {
-        // Ottieni userId dall'email
-        const { data: { user } } = await supabase.auth.admin.getUserByEmail(userEmail);
-        if (!user) {
+        // Ottieni userId dall'email usando la funzione RPC
+        // Prova prima dalla tabella users pubblica
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', userEmail)
+          .single();
+
+        let userId: string | undefined;
+        
+        if (!userError && userData) {
+          userId = userData.id;
+        } else {
+          // Se non trovato nella tabella users, usa la funzione SQL per recuperare da auth.users
+          const { data: userIdFromRpc, error: rpcError } = await supabase.rpc('get_user_id_by_email', {
+            user_email_param: userEmail
+          });
+          
+          if (!rpcError && userIdFromRpc) {
+            userId = userIdFromRpc;
+          } else {
+            return NextResponse.json({
+              success: false,
+              error: 'Utente non trovato',
+              details: rpcError?.message || 'Nessun utente trovato con questa email'
+            }, { status: 404 });
+          }
+        }
+
+        if (!userId) {
           return NextResponse.json({
             success: false,
-            error: 'Utente non trovato'
+            error: 'User ID non disponibile'
           }, { status: 404 });
         }
 
-        const isCompleted = await checkAndUpdatePhase1Completion(userEmail, courseId, user.id);
+        const isCompleted = await checkAndUpdatePhase1Completion(userEmail, courseId, userId);
         const status = await getStartupAwardStatus(userEmail, courseId);
         
         return NextResponse.json({
