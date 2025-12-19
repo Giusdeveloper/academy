@@ -195,6 +195,7 @@ export default function CheckoutPage() {
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-sm text-yellow-800">
                     ⚠️ Il servizio di pagamento è temporaneamente non disponibile. 
+                    {/* eslint-disable-next-line react/no-unescaped-entities */}
                     Contattaci per completare l'acquisto.
                   </p>
                 </div>
@@ -249,6 +250,7 @@ export default function CheckoutPage() {
                 <p className="mb-2">✅ Accesso immediato al corso</p>
                 <p className="mb-2">✅ Supporto clienti incluso</p>
                 <p className="mb-2">✅ Garanzia soddisfatti o rimborsati</p>
+                {/* eslint-disable-next-line react/no-unescaped-entities */}
                 <p>📧 Contattaci per completare l'acquisto</p>
               </div>
             </div>
