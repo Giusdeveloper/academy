@@ -114,6 +114,8 @@ class RevolutService {
       order_id: orderId,
       customer_email: userEmail,
       customer_name: userName,
+      return_url: REVOLUT_CONFIG.SUCCESS_URL,
+      webhook_url: REVOLUT_CONFIG.WEBHOOK_URL,
       metadata: {
         course_id: courseId,
         course_title: courseTitle,
