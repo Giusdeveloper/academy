@@ -98,8 +98,18 @@ export async function notifyCourseCompletion(data: CompletionNotificationData): 
  * Invia email di notifica all'admin
  */
 async function sendEmailNotification(data: CompletionNotificationData): Promise<void> {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) return;
+  // Supporta più destinatari: ADMIN_EMAIL può contenere più email separate da virgola
+  // oppure usa ADMIN_EMAILS come array (formato: email1,email2,email3)
+  const adminEmailEnv = process.env.ADMIN_EMAIL || process.env.ADMIN_EMAILS;
+  if (!adminEmailEnv) return;
+
+  // Splitta le email per virgola e rimuovi spazi
+  const adminEmails = adminEmailEnv
+    .split(',')
+    .map(email => email.trim())
+    .filter(email => email.length > 0);
+  
+  if (adminEmails.length === 0) return;
 
   // Verifica che siamo lato server
   if (typeof window !== 'undefined') {
@@ -110,10 +120,10 @@ async function sendEmailNotification(data: CompletionNotificationData): Promise<
   // Inizializza Resend (lazy dynamic import)
   const resend = await getResendClient();
   
-  // Se Resend non è configurato, logga solo
+    // Se Resend non è configurato, logga solo
   if (!resend) {
     console.log('📧 Email notification (Resend non configurato):', {
-      to: adminEmail,
+      to: adminEmails,
       subject: `✅ Corso completato: ${data.courseTitle}`,
       body: `
         Un utente ha completato il corso Startup Award!
@@ -153,7 +163,7 @@ async function sendEmailNotification(data: CompletionNotificationData): Promise<
 
     const { data: emailData, error } = await resend.emails.send({
       from: fromEmail,
-      to: adminEmail,
+      to: adminEmails, // Array di destinatari
       subject: `✅ Corso completato: ${cleanCourseTitle}`,
       html: `
         <!DOCTYPE html>
@@ -268,7 +278,7 @@ Course ID: ${data.courseId}
       console.error('3. Oppure verifica l\'email di destinazione nel dashboard Resend');
       console.error('');
       console.error(`Dominio attuale: ${fromEmail}`);
-      console.error(`Email destinatario: ${adminEmail}`);
+      console.error(`Email destinatari: ${adminEmails.join(', ')}`);
       console.error('');
       console.error('💡 Per test rapidi, puoi verificare l\'email destinatario nel dashboard Resend:');
       console.error('   https://resend.com/emails');
