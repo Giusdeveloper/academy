@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import AuthForm from '@/components/auth/AuthForm';
 import './login.css';
 
@@ -10,7 +11,9 @@ export default function LoginPage() {
         </h1>
       </div>
       <div className="login-form-container">
-        <AuthForm mode="login" />
+        <Suspense fallback={<div>Caricamento...</div>}>
+          <AuthForm mode="login" />
+        </Suspense>
       </div>
     </div>
   );
