@@ -9,9 +9,17 @@ class RevolutService {
     this.baseURL = REVOLUT_CONFIG.BASE_URL;
     this.apiKey = REVOLUT_CONFIG.API_KEY || '';
     
-    if (!this.apiKey) {
-      throw new Error('REVOLUT_API_KEY non configurata nelle variabili d\'ambiente');
-    }
+    // Non lanciare errore durante il build - il servizio sarà disabilitato
+    // if (!this.apiKey) {
+    //   throw new Error('REVOLUT_API_KEY non configurata nelle variabili d\'ambiente');
+    // }
+  }
+
+  /**
+   * Verifica se il servizio è configurato e disponibile
+   */
+  isAvailable(): boolean {
+    return !!this.apiKey;
   }
 
   private getHeaders() {
@@ -26,6 +34,10 @@ class RevolutService {
    * Crea un nuovo pagamento
    */
   async createPayment(paymentData: RevolutPaymentRequest): Promise<RevolutPaymentResponse> {
+    if (!this.isAvailable()) {
+      throw new Error('Servizio di pagamento non configurato');
+    }
+    
     try {
       const response: AxiosResponse<RevolutPaymentResponse> = await axios.post(
         `${this.baseURL}/payments`,
@@ -89,6 +101,10 @@ class RevolutService {
    * Verifica la firma del webhook
    */
   verifyWebhookSignature(payload: string, signature: string): boolean {
+    if (!this.isAvailable()) {
+      return false;
+    }
+    
     // Implementazione della verifica della firma del webhook
     // Revolut fornisce una firma HMAC per verificare l'autenticità
     // eslint-disable-next-line @typescript-eslint/no-require-imports

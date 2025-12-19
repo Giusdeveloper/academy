@@ -5,6 +5,15 @@ import { supabase } from '@/config/supabase';
 
 export async function POST(request: NextRequest) {
   try {
+    // Verifica se il servizio di pagamento è disponibile
+    if (!revolutService.isAvailable()) {
+      console.warn('Webhook Revolut ricevuto ma servizio non configurato');
+      return NextResponse.json(
+        { error: 'Servizio di pagamento non configurato' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.text();
     const signature = request.headers.get('revolut-signature');
 

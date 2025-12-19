@@ -4,6 +4,14 @@ import { supabase } from '@/config/supabase';
 
 export async function POST(request: NextRequest) {
   try {
+    // Verifica se il servizio di pagamento è disponibile
+    if (!revolutService.isAvailable()) {
+      return NextResponse.json(
+        { error: 'Servizio di pagamento temporaneamente non disponibile' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { courseId, userEmail, userName } = body;
 

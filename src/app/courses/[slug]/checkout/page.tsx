@@ -86,11 +86,17 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Errore nella creazione del pagamento');
+        // Se il servizio non è disponibile (503), mostra un messaggio specifico
+        if (response.status === 503) {
+          setError('Il servizio di pagamento è temporaneamente non disponibile. Contattaci per maggiori informazioni.');
+        } else {
+          throw new Error(data.error || 'Errore nella creazione del pagamento');
+        }
+        return;
       }
 
       // Redirect al checkout di Revolut
-      if (data.payment.checkout_url) {
+      if (data.payment?.checkout_url) {
         window.location.href = data.payment.checkout_url;
       } else {
         throw new Error('URL di checkout non disponibile');
@@ -186,15 +192,12 @@ export default function CheckoutPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Metodo di Pagamento
                 </h3>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">R</span>
-                  </div>
-                  <span className="text-gray-900">Revolut</span>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ Il servizio di pagamento è temporaneamente non disponibile. 
+                    Contattaci per completare l'acquisto.
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  Pagamento sicuro tramite Revolut
-                </p>
               </div>
 
               {error && (
@@ -212,8 +215,7 @@ export default function CheckoutPage() {
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                {/* eslint-disable-next-line react/no-unescaped-entities */}
-                Cliccando su "Paga", sarai reindirizzato a Revolut per completare il pagamento in modo sicuro.
+                Il servizio di pagamento sarà presto disponibile. Contattaci per maggiori informazioni.
               </p>
             </div>
 
@@ -244,10 +246,10 @@ export default function CheckoutPage() {
               </div>
 
               <div className="mt-8 text-sm text-gray-500">
-                <p className="mb-2">✅ Pagamento sicuro con Revolut</p>
                 <p className="mb-2">✅ Accesso immediato al corso</p>
                 <p className="mb-2">✅ Supporto clienti incluso</p>
-                <p>✅ Garanzia soddisfatti o rimborsati</p>
+                <p className="mb-2">✅ Garanzia soddisfatti o rimborsati</p>
+                <p>📧 Contattaci per completare l'acquisto</p>
               </div>
             </div>
           </div>
