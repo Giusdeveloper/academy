@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import AuthForm from '@/components/auth/AuthForm';
 import './register.css';
 
@@ -10,7 +11,9 @@ export default function RegisterPage() {
         </h1>
       </div>
       <div className="register-form-container">
-        <AuthForm mode="register" />
+        <Suspense fallback={<div>Caricamento...</div>}>
+          <AuthForm mode="register" />
+        </Suspense>
       </div>
     </div>
   );
