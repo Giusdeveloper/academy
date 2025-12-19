@@ -1,0 +1,18 @@
+{
+  "events": [
+    {
+      "id": "napoli-devfest-2025",
+      "title": "Napoli DevFest 2025",
+      "partner": "Google Developer Groups Napoli",
+      "description": "Il più grande evento tech di Napoli. Una giornata intera dedicata a intelligenza artificiale, gaming, robotica, startup e networking con ospiti internazionali e Alberto Giusti nella Startup Alley.",
+      "date": "11 Ottobre 2025",
+      "location": "Città della Scienza, Napoli",
+      "ticketPrice": "€10 - €50 (limitati)",
+      "ticketUrl": "https://www.eventbrite.it/e/napoli-devfest-2025-by-google-developer-groups-napoli-tickets-1322454008539",
+      "image": null,
+      "featured": true,
+      "active": false
+    }
+  ]
+}
+
