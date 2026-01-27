@@ -6,11 +6,17 @@ import { supabase } from '@/config/supabase';
 
 // Valida che NEXTAUTH_SECRET sia configurato
 if (!process.env.NEXTAUTH_SECRET) {
-  console.warn('⚠️ NEXTAUTH_SECRET non configurato. Genera un secret con: openssl rand -base64 32');
+  const errorMsg = '⚠️ NEXTAUTH_SECRET non configurato. Genera un secret con: openssl rand -base64 32';
+  console.error(errorMsg);
+}
+
+// Valida che NEXTAUTH_URL sia configurato in produzione
+if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
+  console.error('⚠️ NEXTAUTH_URL non configurato in produzione. Usa il dominio Vercel come valore.');
 }
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || undefined,
   providers: [
     // Google Provider (solo se configurato)
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [

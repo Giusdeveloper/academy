@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { exportToCSV } from '@/lib/csv-export';
 
 interface AdminLog {
@@ -64,7 +64,11 @@ export default function AdminLogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, page, limit]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('it-IT', {

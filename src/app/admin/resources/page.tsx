@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Resource } from '@/types/resources';
 import { exportToCSV } from '@/lib/csv-export';
@@ -17,11 +17,7 @@ export default function AdminResourcesPage() {
     isActive: '',
   });
 
-  useEffect(() => {
-    fetchResources();
-  }, [filters]);
-
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -51,7 +47,11 @@ export default function AdminResourcesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchResources();
+  }, [fetchResources]);
 
   const handleDelete = async (resourceId: string, resourceTitle: string) => {
     if (!confirm(`Sei sicuro di voler eliminare la risorsa "${resourceTitle}"?`)) {

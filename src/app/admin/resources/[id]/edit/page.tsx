@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Resource, ResourceType, ResourceCategory, DifficultyLevel, Language } from '@/types/resources';
@@ -31,11 +31,7 @@ export default function EditResourcePage() {
     estimated_time: '',
   });
 
-  useEffect(() => {
-    fetchResource();
-  }, [resourceId]);
-
-  const fetchResource = async () => {
+  const fetchResource = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/resources');
       if (!response.ok) {
@@ -71,7 +67,11 @@ export default function EditResourcePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [resourceId]);
+
+  useEffect(() => {
+    fetchResource();
+  }, [fetchResource]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

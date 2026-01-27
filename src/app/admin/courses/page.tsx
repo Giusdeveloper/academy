@@ -61,10 +61,6 @@ export default function AdminCoursesPage() {
     fetchCourses();
   }, [fetchCourses]);
 
-  useEffect(() => {
-    fetchCourses();
-  }, [filters, page]);
-
   const handleDelete = async (courseId: string, courseTitle: string) => {
     if (!confirm(`Sei sicuro di voler eliminare il corso "${courseTitle}"?\n\nQuesta azione eliminerà anche tutte le lezioni associate.`)) {
       return;

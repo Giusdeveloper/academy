@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { exportToCSV } from '@/lib/csv-export';
 
 interface Completion {
@@ -50,11 +50,7 @@ export default function AdminStartupAwardPage() {
     status: '', // 'completed' | 'enrolled' | ''
   });
 
-  useEffect(() => {
-    fetchCompletions();
-  }, [filters]);
-
-  const fetchCompletions = async () => {
+  const fetchCompletions = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -78,7 +74,11 @@ export default function AdminStartupAwardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchCompletions();
+  }, [fetchCompletions]);
 
   const handleResetProgress = async (completionId: string, userEmail: string, courseId: string) => {
     if (!confirm(`Sei sicuro di voler resettare i progressi per ${userEmail}?\n\nQuesta azione eliminerà tutti i progressi del corso e resetterà lo stato Startup Award.`)) {

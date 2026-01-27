@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Event } from '@/lib/events';
@@ -25,11 +25,7 @@ export default function EditEventPage() {
     active: true,
   });
 
-  useEffect(() => {
-    fetchEvent();
-  }, [eventId]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/events');
       if (!response.ok) {
@@ -59,7 +55,11 @@ export default function EditEventPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

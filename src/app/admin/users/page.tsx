@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { exportToCSV } from '@/lib/csv-export';
 
@@ -26,11 +26,7 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  useEffect(() => {
-    fetchUsers();
-  }, [filters, page]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -54,7 +50,11 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, page, limit]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleRoleChange = async (userId: string, newRole: 'USER' | 'ADMIN' | 'MODERATOR') => {
     if (!confirm(`Sei sicuro di voler cambiare il ruolo a ${newRole}?`)) {
