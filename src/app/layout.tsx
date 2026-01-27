@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientNavbar from "@/components/ClientNavbar";
 import ErrorHandler from "@/components/ErrorHandler";
 import AuthProvider from "@/components/providers/AuthProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
           <ClientNavbar />
           <main className="min-h-screen">{children}</main>
         </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
