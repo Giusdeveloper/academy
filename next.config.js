@@ -21,6 +21,11 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    // Ottimizzazioni per ridurre i warning di lazy loading
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   // Configurazione per dominio personalizzato
   async headers() {
@@ -41,9 +46,10 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.hs-scripts.com https://js.hsforms.net",
-              "style-src 'self' 'unsafe-inline' https://js.hsforms.net",
+              "style-src 'self' 'unsafe-inline' https://js.hsforms.net https://fonts.googleapis.com",
+              "style-src-elem 'self' 'unsafe-inline' https://js.hsforms.net https://fonts.googleapis.com",
               "img-src 'self' data: https: https://forms-na1.hsforms.com",
-              "font-src 'self' https:",
+              "font-src 'self' https://fonts.gstatic.com https:",
               "connect-src 'self' https://*.supabase.co https://*.supabase.com https://forms-na1.hsforms.com https://forms.hsforms.com https://hubspot-forms-static-embed.s3.amazonaws.com",
               "media-src 'self' https:",
             ].join('; '),

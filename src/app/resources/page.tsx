@@ -185,7 +185,7 @@ export default function ResourcesPage() {
         <div className="container">
           <h2 className="section-title">Risorse in Evidenza</h2>
           <div className="featured-grid">
-              {featuredResources.map((resource) => (
+              {featuredResources.map((resource, index) => (
                 <div key={resource.id} className="featured-card">
               <div className="featured-image">
                 <Image
@@ -194,6 +194,7 @@ export default function ResourcesPage() {
                   width={400}
                   height={250}
                   className="w-full h-full object-cover"
+                      priority={index === 0}
                       onLoad={() => handleView(resource)}
                     />
                     <div className={`featured-badge ${resource.is_premium ? 'premium' : 'popular'}`}>

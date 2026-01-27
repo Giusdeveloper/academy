@@ -143,7 +143,7 @@ export default function HomePage() {
             ))
           ) : courses.length > 0 ? (
             // Courses
-            courses.map((course) => (
+            courses.map((course, index) => (
               <div key={course.id} className="course-card">
                 <div className="course-image-container">
                   <Image
@@ -152,7 +152,9 @@ export default function HomePage() {
                     width={400}
                     height={192}
                     className="course-image"
+                    style={{ width: '100%', height: 'auto' }}
                     quality={90}
+                    priority={index < 3}
                   />
                   <div className="course-image-overlay"></div>
                 </div>

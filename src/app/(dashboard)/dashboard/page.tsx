@@ -476,14 +476,15 @@ export default function DashboardPage() {
               </div>
             ) : userCourses.length > 0 ? (
               <div className="flex flex-col md:flex-row gap-6">
-                {userCourses.map((course) => (
+                {userCourses.map((course, index) => (
                   <div key={course.id} className="flex-1 min-w-[180px] bg-[#f6fafd] rounded-xl overflow-hidden shadow border border-[#e5eaf1] flex flex-col">
                     <Image 
                       src={course.image_url || "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&h=128&q=80"}
                       alt={course.title} 
                       width={400}
                       height={128}
-                      className="w-full h-32 object-cover" 
+                      className="w-full h-32 object-cover"
+                      priority={index === 0}
                     />
                     <div className="p-4 flex-1 flex flex-col">
                       <div className="font-semibold text-[#183a5a] mb-2">{course.title}</div>

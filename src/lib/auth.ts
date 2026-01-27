@@ -4,7 +4,13 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { SupabaseAdapter } from '@auth/supabase-adapter';
 import { supabase } from '@/config/supabase';
 
+// Valida che NEXTAUTH_SECRET sia configurato
+if (!process.env.NEXTAUTH_SECRET) {
+  console.warn('⚠️ NEXTAUTH_SECRET non configurato. Genera un secret con: openssl rand -base64 32');
+}
+
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     // Google Provider (solo se configurato)
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [

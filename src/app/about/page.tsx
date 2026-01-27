@@ -129,6 +129,7 @@ export default function AboutPage() {
                   width={400}
                   height={400}
                   className="member-img"
+                  priority
                 />
               </div>
               <div className="member-info">

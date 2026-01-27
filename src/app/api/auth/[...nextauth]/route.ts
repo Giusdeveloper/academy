@@ -1,11 +1,8 @@
 import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { authOptionsSimple } from '@/lib/auth-simple';
 
-// Usa la configurazione semplice se non ci sono provider configurati
-const hasProviders = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
-const config = hasProviders ? authOptions : authOptionsSimple;
-
-const handler = NextAuth(config);
+// Usa sempre authOptions che include almeno il CredentialsProvider
+// Se Google è configurato, verrà aggiunto automaticamente
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

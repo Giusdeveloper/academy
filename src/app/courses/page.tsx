@@ -101,7 +101,7 @@ export default function CoursesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
+            {courses.map((course, index) => (
               <div key={course.id} className="bg-white rounded-2xl border border-[#e5eaf1] overflow-hidden shadow-sm hover:shadow-md transition">
                 <div className="aspect-video relative">
                   <Image 
@@ -111,6 +111,7 @@ export default function CoursesPage() {
                     height={225}
                     className="w-full h-full object-cover"
                     quality={90}
+                    priority={index < 3}
                     onError={() => {
                       console.log(`❌ Errore caricamento immagine per: ${course.title}`);
                     }}

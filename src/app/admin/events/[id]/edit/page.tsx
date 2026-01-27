@@ -1,0 +1,293 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import { Event } from '@/lib/events';
+
+export default function EditEventPage() {
+  const router = useRouter();
+  const params = useParams();
+  const eventId = params.id as string;
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    partner: '',
+    description: '',
+    date: '',
+    location: '',
+    ticketPrice: '',
+    ticketUrl: '',
+    featured: false,
+    active: true,
+  });
+
+  useEffect(() => {
+    fetchEvent();
+  }, [eventId]);
+
+  const fetchEvent = async () => {
+    try {
+      const response = await fetch('/api/admin/events');
+      if (!response.ok) {
+        throw new Error('Errore nel caricamento evento');
+      }
+      const data = await response.json();
+      const event = data.events.find((e: Event) => e.id === eventId);
+
+      if (!event) {
+        setError('Evento non trovato');
+        return;
+      }
+
+      setFormData({
+        title: event.title,
+        partner: event.partner,
+        description: event.description,
+        date: event.date,
+        location: event.location,
+        ticketPrice: event.ticketPrice,
+        ticketUrl: event.ticketUrl,
+        featured: event.featured || false,
+        active: event.active !== undefined ? event.active : true,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore sconosciuto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/admin/events', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: eventId,
+          ...formData,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Errore nell\'aggiornamento evento');
+      }
+
+      router.push('/admin/events');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore sconosciuto');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
+
+  if (error && !formData.title) {
+    return (
+      <div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+        <Link
+          href="/admin/events"
+          className="text-pink-500 hover:text-pink-600 font-medium"
+        >
+          ← Torna alla lista
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Modifica Evento</h1>
+        <Link
+          href="/admin/events"
+          className="text-gray-600 hover:text-gray-900 font-medium"
+        >
+          ← Torna alla lista
+        </Link>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Titolo Evento *
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="partner" className="block text-sm font-medium text-gray-700 mb-2">
+              Partner/Organizzatore *
+            </label>
+            <input
+              type="text"
+              id="partner"
+              name="partner"
+              required
+              value={formData.partner}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              Descrizione *
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              required
+              rows={4}
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+              Data *
+            </label>
+            <input
+              type="text"
+              id="date"
+              name="date"
+              required
+              value={formData.date}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              Luogo *
+            </label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              required
+              value={formData.location}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="ticketPrice" className="block text-sm font-medium text-gray-700 mb-2">
+              Prezzo Biglietti *
+            </label>
+            <input
+              type="text"
+              id="ticketPrice"
+              name="ticketPrice"
+              required
+              value={formData.ticketPrice}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="ticketUrl" className="block text-sm font-medium text-gray-700 mb-2">
+              URL Biglietti *
+            </label>
+            <input
+              type="url"
+              id="ticketUrl"
+              name="ticketUrl"
+              required
+              value={formData.ticketUrl}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-6">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              name="featured"
+              checked={formData.featured}
+              onChange={handleChange}
+              className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Evento in evidenza</span>
+          </label>
+
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              name="active"
+              checked={formData.active}
+              onChange={handleChange}
+              className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+            />
+            <span className="ml-2 text-sm text-gray-700">Attivo (visibile sul sito)</span>
+          </label>
+        </div>
+
+        <div className="flex items-center justify-end space-x-4 pt-4 border-t">
+          <Link
+            href="/admin/events"
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Annulla
+          </Link>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-lg transition-colors disabled:bg-gray-400"
+          >
+            {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+

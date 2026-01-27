@@ -18,7 +18,7 @@ export interface Database {
           email_verified: string | null
           image: string | null
           password: string | null
-          role: 'USER' | 'ADMIN'
+          role: 'USER' | 'ADMIN' | 'MODERATOR'
           created_at: string
           updated_at: string
         }
@@ -30,7 +30,7 @@ export interface Database {
           email_verified?: string | null
           image?: string | null
           password?: string | null
-          role?: 'USER' | 'ADMIN'
+          role?: 'USER' | 'ADMIN' | 'MODERATOR'
           created_at?: string
           updated_at?: string
         }
@@ -42,7 +42,7 @@ export interface Database {
           email_verified?: string | null
           image?: string | null
           password?: string | null
-          role?: 'USER' | 'ADMIN'
+          role?: 'USER' | 'ADMIN' | 'MODERATOR'
           created_at?: string
           updated_at?: string
         }
