@@ -11,7 +11,6 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(false);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -20,7 +19,6 @@ export default function Navbar() {
         return;
       }
 
-      setCheckingAdmin(true);
       try {
         const response = await fetch('/api/admin/verify');
         if (response.ok) {
@@ -29,10 +27,8 @@ export default function Navbar() {
         } else {
           setIsAdmin(false);
         }
-      } catch (error) {
+      } catch {
         setIsAdmin(false);
-      } finally {
-        setCheckingAdmin(false);
       }
     };
 

@@ -42,13 +42,16 @@ export async function GET() {
 
     const courseCounts = new Map<string, { count: number; title: string; slug: string }>();
     
-    progressData?.forEach((p: { course_id?: string; courses?: { title?: string; slug?: string } | null }) => {
-      if (p.course_id && p.courses) {
+    if (progressData) {
+      for (const p of progressData) {
         const courseId = p.course_id;
-        const current = courseCounts.get(courseId) || { count: 0, title: p.courses.title || 'Sconosciuto', slug: p.courses.slug || '' };
-        courseCounts.set(courseId, { ...current, count: current.count + 1 });
+        const courses = Array.isArray(p.courses) ? p.courses[0] : p.courses;
+        if (courseId && courses) {
+          const current = courseCounts.get(courseId) || { count: 0, title: courses.title || 'Sconosciuto', slug: courses.slug || '' };
+          courseCounts.set(courseId, { ...current, count: current.count + 1 });
+        }
       }
-    });
+    }
 
     const topCourses = Array.from(courseCounts.entries())
       .map(([id, data]) => ({ id, ...data }))

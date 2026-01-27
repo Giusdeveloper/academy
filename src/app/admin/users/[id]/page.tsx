@@ -164,25 +164,24 @@ export default function UserDetailPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Fase Corrente:</span>
-              <span className="font-semibold text-gray-900">Fase {stats.startupAward.current_phase}</span>
+              <span className="font-semibold text-gray-900">
+                {stats.startupAward.phase2_completed_at ? 'Fase 2 Completata' : 
+                 stats.startupAward.phase1_completed_at ? 'Fase 2' : 'Fase 1'}
+              </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Stato:</span>
-              <span className="font-semibold text-gray-900">{stats.startupAward.status}</span>
-            </div>
-            {stats.startupAward.phase1_enrolled_at && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Iscritto Fase 1:</span>
-                <span className="text-sm text-gray-900">
-                  {new Date(stats.startupAward.phase1_enrolled_at).toLocaleString('it-IT')}
-                </span>
-              </div>
-            )}
             {stats.startupAward.phase1_completed_at && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Completato Fase 1:</span>
                 <span className="text-sm text-green-600 font-medium">
                   {new Date(stats.startupAward.phase1_completed_at).toLocaleString('it-IT')}
+                </span>
+              </div>
+            )}
+            {stats.startupAward.phase2_completed_at && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Completato Fase 2:</span>
+                <span className="text-sm text-green-600 font-medium">
+                  {new Date(stats.startupAward.phase2_completed_at).toLocaleString('it-IT')}
                 </span>
               </div>
             )}
