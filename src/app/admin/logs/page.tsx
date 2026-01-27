@@ -33,11 +33,7 @@ export default function AdminLogsPage() {
   const [page, setPage] = useState(1);
   const limit = 50;
 
-  useEffect(() => {
-    fetchLogs();
-  }, [filters, page]);
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError(null);
 
