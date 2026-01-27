@@ -37,7 +37,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-[#17334F] w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-20 items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center h-full">
@@ -51,13 +51,13 @@ export default function Navbar() {
             />
           </Link>
           <div className="hidden md:flex gap-6 ml-6">
-            <Link href="/" className="text-white/90 hover:text-white font-medium text-sm">Home</Link>
-            <Link href="/courses" className="text-white/70 hover:text-white font-medium text-sm">Corsi</Link>
-            <Link href="/workshops" className="text-white/70 hover:text-white font-medium text-sm">Workshop</Link>
-            <Link href="/startup-award" className="text-white/70 hover:text-white font-medium text-sm">Startup Award</Link>
-            <Link href="/resources" className="text-white/70 hover:text-white font-medium text-sm">Risorse</Link>
-            <Link href="/about" className="text-white/70 hover:text-white font-medium text-sm">Chi siamo</Link>
-            <Link href="/contacts" className="text-white/70 hover:text-white font-medium text-sm">Contatti</Link>
+            <Link href="/" className="text-white/90 hover:text-white font-medium text-base">Home</Link>
+            <Link href="/courses" className="text-white/70 hover:text-white font-medium text-base">Corsi</Link>
+            <Link href="/workshops" className="text-white/70 hover:text-white font-medium text-base">Workshop</Link>
+            <Link href="/startup-award" className="text-white/70 hover:text-white font-medium text-base">Startup Award</Link>
+            <Link href="/resources" className="text-white/70 hover:text-white font-medium text-base">Risorse</Link>
+            <Link href="/about" className="text-white/70 hover:text-white font-medium text-base">Chi siamo</Link>
+            <Link href="/contacts" className="text-white/70 hover:text-white font-medium text-base">Contatti</Link>
           </div>
         </div>
 
@@ -65,20 +65,20 @@ export default function Navbar() {
         {status === 'loading' ? (
           <div className="ml-4 px-4 py-2 text-white text-sm">Caricamento...</div>
         ) : session ? (
-          <div className="ml-4 flex items-center gap-2 flex-shrink-0">
-            <span className="hidden xl:block text-white/90 text-xs font-medium truncate max-w-[100px]">
+          <div className="ml-4 flex items-center gap-3 flex-shrink-0">
+            <span className="hidden xl:block text-white/90 text-sm font-medium truncate max-w-[120px]">
               {session.user?.name || session.user?.email}
             </span>
             {isAdmin && (
               <Link
                 href="/admin"
-                className="px-3 py-1.5 rounded-full border-2 border-pink-500 text-white font-semibold bg-pink-500 hover:bg-pink-600 transition text-xs whitespace-nowrap"
+                className="px-4 py-2 rounded-full border-2 border-pink-500 text-white font-semibold bg-pink-500 hover:bg-pink-600 transition text-sm whitespace-nowrap"
               >
                 Admin
               </Link>
             )}
             <button
-              className="px-3 py-1.5 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-xs whitespace-nowrap"
+              className="px-4 py-2 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-sm whitespace-nowrap"
               onClick={() => router.push('/dashboard')}
             >
               <span className="hidden sm:inline">Area Riservata</span>
@@ -87,15 +87,15 @@ export default function Navbar() {
             <LoginButton showUserInfo={false} />
           </div>
         ) : (
-          <div className="ml-4 flex items-center gap-2">
+          <div className="ml-4 flex items-center gap-3">
             <button
-              className="px-3 py-1.5 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-xs whitespace-nowrap"
+              className="px-4 py-2 rounded-full border-2 border-white text-white font-semibold hover:bg-white hover:text-[#17334F] transition text-sm whitespace-nowrap"
               onClick={() => router.push('/auth/signin')}
             >
               Accedi
             </button>
             <button
-              className="px-4 py-1.5 rounded-full border-2 border-[#9E005C] text-white font-semibold bg-[#9E005C] hover:bg-white hover:text-[#9E005C] transition text-xs whitespace-nowrap"
+              className="px-5 py-2 rounded-full border-2 border-[#9E005C] text-white font-semibold bg-[#9E005C] hover:bg-white hover:text-[#9E005C] transition text-sm whitespace-nowrap"
               onClick={() => router.push('/register')}
             >
               Registrati

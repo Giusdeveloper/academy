@@ -66,7 +66,7 @@ export default function LoginButton({ className = '', showUserInfo = true }: Log
         <button
           onClick={handleSignOut}
           disabled={loading}
-          className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+          className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
         >
           {loading ? 'Uscita...' : 'Esci'}
         </button>

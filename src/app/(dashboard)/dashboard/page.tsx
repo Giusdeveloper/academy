@@ -424,14 +424,23 @@ export default function DashboardPage() {
               throw new Error('HubSpot non disponibile dopo il caricamento');
             }
           } catch (error) {
-            console.warn('Errore nella creazione del form HubSpot:', error);
+            // Non loggare errori se HubSpot è bloccato da ad-blocker
+            const errorMessage = error?.toString() || '';
+            if (!errorMessage.includes('ERR_BLOCKED_BY_CLIENT') && !errorMessage.includes('blocked')) {
+              console.warn('Errore nella creazione del form HubSpot:', error);
+            }
             showFallbackMessage();
           }
         }, 500);
       };
 
       script.onerror = (error) => {
-        console.warn('Errore nel caricamento dello script HubSpot:', error);
+        // Non loggare errori causati da ad-blocker (ERR_BLOCKED_BY_CLIENT)
+        // Questi sono normali quando l'utente ha un ad-blocker attivo
+        const errorMessage = error?.toString() || '';
+        if (!errorMessage.includes('ERR_BLOCKED_BY_CLIENT')) {
+          console.warn('Errore nel caricamento dello script HubSpot:', error);
+        }
         showFallbackMessage();
       };
 

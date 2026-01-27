@@ -75,8 +75,13 @@ export default function ContactsPage() {
         }, 500);
       };
 
-      script.onerror = () => {
-        console.error('Errore nel caricamento dello script HubSpot');
+      script.onerror = (error) => {
+        // Non loggare errori causati da ad-blocker (ERR_BLOCKED_BY_CLIENT)
+        // Questi sono normali quando l'utente ha un ad-blocker attivo
+        const errorMessage = error?.toString() || '';
+        if (!errorMessage.includes('ERR_BLOCKED_BY_CLIENT')) {
+          console.warn('Errore nel caricamento dello script HubSpot:', error);
+        }
         const container = document.getElementById('hubspot-form-container');
         if (container) {
           container.innerHTML = '<p class="text-center text-gray-600">Form temporaneamente non disponibile. Riprova più tardi.</p>';
