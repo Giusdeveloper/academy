@@ -15,8 +15,13 @@ export default function ForgotPasswordPage() {
     setMessage('');
 
     try {
+      // Usa NEXT_PUBLIC_APP_URL se disponibile (produzione), altrimenti window.location.origin (sviluppo)
+      const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                         (typeof window !== 'undefined' ? window.location.origin : '') || 
+                         'https://learning.imment.it';
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${redirectUrl}/reset-password`,
       });
 
       if (error) {

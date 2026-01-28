@@ -42,6 +42,11 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       if (mode === 'register') {
         console.log('🔐 Tentativo di registrazione con:', { email, name, lastName });
         
+        // Usa NEXT_PUBLIC_APP_URL se disponibile (produzione), altrimenti window.location.origin (sviluppo)
+        const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                           (typeof window !== 'undefined' ? window.location.origin : '') || 
+                           'https://learning.imment.it';
+        
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -50,7 +55,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               name,
               last_name: lastName,
             },
-            emailRedirectTo: `${window.location.origin}/verify-email`,
+            emailRedirectTo: `${redirectUrl}/verify-email`,
           },
         });
 
@@ -98,8 +103,18 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           
           // Errore 500 - Problema lato server (probabilmente configurazione SMTP)
           if (errorStatus === 500 || errorStatus === '500') {
-            setError('Errore del server durante la registrazione. Questo potrebbe essere causato da un problema con la configurazione email. Contatta il supporto tecnico e menziona l\'errore 500.');
-            console.error('❌ Errore 500 durante registrazione - Possibile problema SMTP:', error);
+            // Controlla se è un errore di invio email
+            if (errorMessage.includes('sending confirmation email') || 
+                errorMessage.includes('error sending email') ||
+                errorMessage.includes('smtp') ||
+                (errorMessage.includes('email') && errorStatus === 500)) {
+              setError('⚠️ Errore nell\'invio dell\'email di conferma. La registrazione potrebbe essere completata, ma l\'email non è stata inviata a causa di una configurazione SMTP errata. Configura Resend in Supabase seguendo la guida QUICK_START_RESEND_SUPABASE.md. Puoi provare ad accedere direttamente - l\'account potrebbe essere già stato creato.');
+            } else if (errorMessage.includes('database error') || errorMessage.includes('saving new user')) {
+              setError('Errore del database durante la registrazione. Esegui la migration di fix (vedi FIX_ERRORE_500_REGISTRAZIONE.md) e riprova.');
+            } else {
+              setError('Errore del server durante la registrazione. Contatta il supporto tecnico e menziona l\'errore 500.');
+            }
+            console.error('❌ Errore 500 durante registrazione:', error);
             return;
           }
           
@@ -204,11 +219,16 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     setSuccess(null);
 
     try {
+      // Usa NEXT_PUBLIC_APP_URL se disponibile (produzione), altrimenti window.location.origin (sviluppo)
+      const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                         (typeof window !== 'undefined' ? window.location.origin : '') || 
+                         'https://learning.imment.it';
+      
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`
+          emailRedirectTo: `${redirectUrl}/verify-email`
         }
       });
 
