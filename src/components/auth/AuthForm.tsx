@@ -65,7 +65,9 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           
           // Gestione errori specifici
           const errorMessage = error.message?.toLowerCase() || '';
-          const errorStatus = (error as any)?.status || (error as any)?.code;
+          // Type guard per accedere a proprietà opzionali dell'errore Supabase
+          const errorWithStatus = error as { status?: number; code?: string | number };
+          const errorStatus = errorWithStatus.status || errorWithStatus.code;
           
           // Email già registrata
           if (errorMessage.includes('user already registered') || 
