@@ -60,6 +60,26 @@ GET https://forms-na1.hsforms.com/... net::ERR_BLOCKED_BY_CLIENT
 - ✅ Immagini critiche hanno `priority={true}`
 - ✅ Gestione silenziosa degli errori HubSpot causati da ad-blocker
 - ✅ Warning sui preload sono normali e non richiedono intervento
+- ✅ Migliorata gestione errori registrazione con messaggi più chiari
+
+## 🔴 Errori delle Estensioni Chrome (Non Critici)
+
+**Messaggi tipici:**
+```
+chrome-extension://... Error: No tab with id
+chrome-extension://... Unchecked runtime.lastError
+chrome-extension://... Error in event handler
+```
+
+**Causa:**
+- Questi errori provengono da **estensioni del browser** installate dall'utente
+- Non sono causati dal codice dell'applicazione
+- Sono comuni quando si usano estensioni come password manager, ad-blocker avanzati, etc.
+
+**Soluzione:**
+- ✅ **Nessuna azione richiesta** - Questi errori non influenzano il funzionamento del sito
+- Sono completamente esterni all'applicazione
+- L'utente può disabilitare le estensioni se desidera una console più pulita
 
 ## 🔍 Come Verificare
 

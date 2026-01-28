@@ -61,8 +61,49 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         });
 
         if (error) {
-          console.log('❌ Errore registrazione:', error.message);
-          throw error;
+          console.log('❌ Errore registrazione:', error.message, error);
+          
+          // Gestione errori specifici
+          const errorMessage = error.message?.toLowerCase() || '';
+          const errorStatus = (error as any)?.status || (error as any)?.code;
+          
+          // Email già registrata
+          if (errorMessage.includes('user already registered') || 
+              errorMessage.includes('already registered') ||
+              errorMessage.includes('email already exists') ||
+              (errorStatus === 400 && errorMessage.includes('email'))) {
+            setError('Questa email è già registrata. Prova ad accedere invece di registrarti, oppure usa un\'altra email.');
+            return;
+          }
+          
+          // Password non valida
+          if (errorMessage.includes('password') || errorMessage.includes('password_length')) {
+            setError('La password deve essere lunga almeno 6 caratteri.');
+            return;
+          }
+          
+          // Email non valida
+          if (errorMessage.includes('invalid email') || errorMessage.includes('email format')) {
+            setError('L\'indirizzo email non è valido. Controlla di aver inserito un\'email corretta.');
+            return;
+          }
+          
+          // Errore 400 generico
+          if (errorStatus === 400 || errorStatus === '400') {
+            setError('Errore durante la registrazione. Verifica che l\'email sia valida e che la password sia lunga almeno 6 caratteri. Se il problema persiste, contatta il supporto.');
+            return;
+          }
+          
+          // Errore 500 - Problema lato server (probabilmente configurazione SMTP)
+          if (errorStatus === 500 || errorStatus === '500') {
+            setError('Errore del server durante la registrazione. Questo potrebbe essere causato da un problema con la configurazione email. Contatta il supporto tecnico e menziona l\'errore 500.');
+            console.error('❌ Errore 500 durante registrazione - Possibile problema SMTP:', error);
+            return;
+          }
+          
+          // Errore generico con messaggio più chiaro
+          setError(`Errore durante la registrazione: ${error.message || 'Errore sconosciuto'}. Se il problema persiste, contatta il supporto.`);
+          return;
         }
         
         if (data.user) {
@@ -134,7 +175,17 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         }
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Errore sconosciuto');
+      // Gestione errori generici
+      if (error instanceof Error) {
+        // Se l'errore è già stato gestito sopra, non fare nulla
+        if (!error.message.includes('User already registered') && 
+            !error.message.includes('Password') &&
+            !error.message.includes('Invalid email')) {
+          setError(error.message || 'Errore durante l\'operazione. Riprova più tardi.');
+        }
+      } else {
+        setError('Errore sconosciuto. Riprova più tardi.');
+      }
     } finally {
       setLoading(false);
     }
