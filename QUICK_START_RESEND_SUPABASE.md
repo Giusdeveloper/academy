@@ -9,6 +9,29 @@ Stai usando **Gmail** come provider SMTP, che **non è adatto** per email transa
 
 ## ✅ Soluzione: Passa a Resend
 
+### ⭐ Opzione A: Integrazione Diretta (Consigliata - Più Semplice)
+
+**Vantaggi:**
+- ✅ Configurazione automatica
+- ✅ Gestita direttamente da Resend
+- ✅ Migliore deliverability
+- ✅ Nessuna configurazione SMTP manuale
+
+**Come fare:**
+1. Vai su [Resend Integrations](https://resend.com/settings/integrations)
+2. Clicca **"Connect to Supabase"**
+3. Segui le istruzioni sullo schermo
+4. Seleziona il tuo progetto Supabase
+5. Autorizza la connessione
+
+**Fatto!** L'integrazione è automatica e le email dovrebbero funzionare immediatamente.
+
+---
+
+### Opzione B: Configurazione SMTP Manuale (Alternativa)
+
+Se preferisci configurare manualmente o l'integrazione diretta non è disponibile:
+
 ### Passo 1: Crea Account Resend (2 minuti)
 
 1. Vai su [resend.com](https://resend.com)

@@ -19,7 +19,33 @@ Se gli utenti non ricevono le email di conferma dopo la registrazione, probabilm
 3. Vai su **Authentication** → **Email Templates**
 4. Verifica che i template siano configurati
 
-### Opzione 2: Configurare SMTP Personalizzato (Consigliato per Produzione)
+### Opzione 2A: Integrazione Diretta Resend (⭐ CONSIGLIATA - Più Semplice)
+
+**Vantaggi:**
+- ✅ Configurazione automatica
+- ✅ Gestita direttamente da Resend
+- ✅ Migliore deliverability
+- ✅ Nessuna configurazione SMTP manuale
+- ✅ Setup in 2 minuti
+
+**Come configurare:**
+
+1. Vai su [Resend Integrations](https://resend.com/settings/integrations)
+2. Clicca **"Connect to Supabase"**
+3. Segui le istruzioni sullo schermo
+4. Seleziona il tuo progetto Supabase
+5. Autorizza la connessione
+
+**Fatto!** L'integrazione è automatica e le email dovrebbero funzionare immediatamente.
+
+---
+
+### Opzione 2B: Configurare SMTP Personalizzato (Alternativa)
+
+**Quando usare:**
+- Se l'integrazione diretta non è disponibile
+- Se preferisci controllo manuale completo
+- Per configurazioni avanzate
 
 **Vantaggi:**
 - Nessun limite di email
