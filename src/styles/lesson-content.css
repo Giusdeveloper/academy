@@ -55,3 +55,8 @@
 .lesson-content-text *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(strong):not(a) {
   color: #1f2937 !important; /* gray-800 per tutto il resto */
 }
+
+/* Stili per il contenitore principale del contenuto della lezione */
+.lesson-content-container {
+  color: #1f2937; /* gray-800 */
+}

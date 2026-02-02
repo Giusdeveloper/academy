@@ -148,6 +148,15 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
 
     if (!quiz) {
       await markLessonCompleted(lesson.id);
+      // Emetti evento per aggiornare la dashboard
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lessonCompleted', {
+          detail: { lessonId: lesson.id, courseId }
+        }));
+        window.dispatchEvent(new CustomEvent('courseUpdated', {
+          detail: { courseId }
+        }));
+      }
     }
   };
 
@@ -184,16 +193,10 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
       {/* Contenuto della lezione */}
       {lesson.content && (
         <div 
-          className="prose prose-gray max-w-none mb-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-li:text-gray-800 prose-a:text-[#9e005c] prose-a:no-underline hover:prose-a:underline"
-          style={{
-            color: '#1f2937', // gray-800
-          }}
+          className="lesson-content-container prose prose-gray max-w-none mb-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-li:text-gray-800 prose-a:text-[#9e005c] prose-a:no-underline hover:prose-a:underline"
         >
           <div 
             dangerouslySetInnerHTML={{ __html: lesson.content }}
-            style={{
-              color: '#1f2937', // gray-800 - colore di base per tutto il testo
-            }}
             className="lesson-content-text"
           />
         </div>
