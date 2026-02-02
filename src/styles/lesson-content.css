@@ -1,0 +1,57 @@
+/* Stili per il contenuto della lezione - miglioramento contrasto testo */
+
+.lesson-content-text {
+  color: #1f2937 !important; /* gray-800 - colore scuro per leggibilità */
+}
+
+.lesson-content-text p {
+  color: #1f2937 !important; /* gray-800 */
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.lesson-content-text h1,
+.lesson-content-text h2,
+.lesson-content-text h3,
+.lesson-content-text h4,
+.lesson-content-text h5,
+.lesson-content-text h6 {
+  color: #111827 !important; /* gray-900 - ancora più scuro per i titoli */
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.lesson-content-text strong {
+  color: #111827 !important; /* gray-900 */
+  font-weight: 700;
+}
+
+.lesson-content-text ul,
+.lesson-content-text ol {
+  color: #1f2937 !important; /* gray-800 */
+  margin-bottom: 1rem;
+}
+
+.lesson-content-text li {
+  color: #1f2937 !important; /* gray-800 */
+  margin-bottom: 0.5rem;
+}
+
+.lesson-content-text a {
+  color: #9e005c !important; /* colore brand rosa */
+  text-decoration: none;
+}
+
+.lesson-content-text a:hover {
+  text-decoration: underline;
+}
+
+/* Override per qualsiasi stile inline che potrebbe essere nel contenuto HTML */
+.lesson-content-text * {
+  color: inherit !important;
+}
+
+.lesson-content-text *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(strong):not(a) {
+  color: #1f2937 !important; /* gray-800 per tutto il resto */
+}

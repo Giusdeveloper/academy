@@ -66,10 +66,25 @@ export default function LessonNavigation({
     !isLessonUnlocked(currentLesson.order + 1);
   
   
-  // Calcola il progresso
-  const completedLessons = lessons.filter(lesson => getLessonStatus(lesson.id) === 'completed').length;
+  // Calcola il progresso - solo lezioni realmente completate (completed: true nel database)
+  const completedLessons = lessons.filter(lesson => {
+    const status = getLessonStatus(lesson.id);
+    // Solo 'completed' significa che la lezione è stata completata (quiz superato)
+    // 'unlocked' significa che è sbloccata ma non completata
+    return status === 'completed';
+  }).length;
   const totalLessons = lessons.length;
   const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  
+  // Debug: log per verificare il calcolo del progresso
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.log('📊 Progresso corso:', {
+      completedLessons,
+      totalLessons,
+      progressPercentage,
+      lessonsStatus: lessons.map(l => ({ id: l.id, title: l.title, status: getLessonStatus(l.id) }))
+    });
+  }
 
   return (
     <div className="lesson-sidebar p-6">

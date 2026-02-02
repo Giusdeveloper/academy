@@ -5,6 +5,7 @@ import { supabase } from '@/config/supabase';
 import VideoPlayer from './VideoPlayer';
 import QuizModal from './QuizModal';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
+import '@/styles/lesson-content.css';
 
 interface Material {
   id: number;
@@ -182,8 +183,19 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
 
       {/* Contenuto della lezione */}
       {lesson.content && (
-        <div className="prose prose-gray max-w-none mb-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-li:text-gray-800 prose-a:text-[#9e005c] prose-a:no-underline hover:prose-a:underline">
-          <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
+        <div 
+          className="prose prose-gray max-w-none mb-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-li:text-gray-800 prose-a:text-[#9e005c] prose-a:no-underline hover:prose-a:underline"
+          style={{
+            color: '#1f2937', // gray-800
+          }}
+        >
+          <div 
+            dangerouslySetInnerHTML={{ __html: lesson.content }}
+            style={{
+              color: '#1f2937', // gray-800 - colore di base per tutto il testo
+            }}
+            className="lesson-content-text"
+          />
         </div>
       )}
 
