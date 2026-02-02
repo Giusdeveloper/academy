@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const userId = user?.id;
 
     // 2. Elimina iscrizioni
-    const { data: enrollmentsToDelete, error: enrollmentsSelectError } = await supabaseAdmin
+    const { data: enrollmentsToDelete } = await supabaseAdmin
       .from('enrollments')
       .select('id, course_id')
       .eq('user_email', email);
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     // 3. Elimina progresso (se abbiamo user_id)
     let deletedProgress = 0;
     if (userId) {
-      const { data: progressToDelete, error: progressSelectError } = await supabaseAdmin
+      const { data: progressToDelete } = await supabaseAdmin
         .from('progress')
         .select('id')
         .eq('user_id', userId);
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     // 4. Elimina ordini (se abbiamo user_id)
     let deletedOrders = 0;
     if (userId) {
-      const { data: ordersToDelete, error: ordersSelectError } = await supabaseAdmin
+      const { data: ordersToDelete } = await supabaseAdmin
         .from('orders')
         .select('id')
         .eq('user_id', userId);

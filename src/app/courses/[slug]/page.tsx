@@ -238,7 +238,7 @@ export default function CoursePage() {
     };
 
     checkEnrollment();
-  }, [course?.id, user?.email]);
+  }, [course?.id, user?.email, user?.id]);
 
   // Calcola il numero di lezioni completate (per evitare loop nel useEffect)
   const completedLessonsCount = progress.filter(p => p.completed).length;

@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/config/supabase';
 import { createClient } from '@supabase/supabase-js';
 
 // Client Supabase con service role key per bypassare RLS
@@ -131,29 +130,57 @@ export async function GET(request: NextRequest) {
       suspiciousPatterns: [] as Array<{
         type: string;
         description: string;
-        records: any[];
+        records: Array<{
+          id: string;
+          userId: string;
+          userEmail: string;
+          lessonTitle: string;
+          completedAt: string;
+          createdAt: string;
+        }>;
       }>
     };
+
+    interface CourseData {
+      id: string;
+      title?: string;
+      slug?: string;
+    }
+
+    interface LessonData {
+      id: string;
+      title?: string;
+      order?: number;
+    }
+
+    interface UserData {
+      id?: string;
+      email?: string;
+    }
 
     // Raggruppa per corso
     if (progressRecords) {
       for (const record of progressRecords) {
-        const course = record.course as any;
-        const lesson = record.lesson as any;
-        const user = record.user as any;
+        const course = record.course as CourseData | CourseData[] | null;
+        const lesson = record.lesson as LessonData | LessonData[] | null;
+        const user = record.user as UserData | UserData[] | null;
 
-        if (!course || !lesson) continue;
+        const courseObj = Array.isArray(course) ? course[0] : course;
+        const lessonObj = Array.isArray(lesson) ? lesson[0] : lesson;
+        const userObj = Array.isArray(user) ? user[0] : user;
 
-        const courseId = course.id;
-        if (!analysis.byCourse[courseId]) {
+        if (!courseObj || !lessonObj) continue;
+
+        const currentCourseId = courseObj.id;
+        if (!analysis.byCourse[currentCourseId]) {
           // Conta le lezioni totali del corso
           const { count: totalLessons } = await supabaseAdmin
             .from('lessons')
             .select('id', { count: 'exact', head: true })
-            .eq('course_id', courseId);
+            .eq('course_id', currentCourseId);
 
-          analysis.byCourse[courseId] = {
-            courseTitle: course.title || 'Sconosciuto',
+          analysis.byCourse[currentCourseId] = {
+            courseTitle: courseObj.title || 'Sconosciuto',
             totalLessons: totalLessons || 0,
             completedLessons: 0,
             users: new Set(),
@@ -161,9 +188,9 @@ export async function GET(request: NextRequest) {
           };
         }
 
-        analysis.byCourse[courseId].completedLessons++;
-        if (user?.id) {
-          analysis.byCourse[courseId].users.add(user.id);
+        analysis.byCourse[currentCourseId].completedLessons++;
+        if (userObj?.id) {
+          analysis.byCourse[currentCourseId].users.add(userObj.id);
         }
 
         // Verifica pattern sospetti
@@ -173,11 +200,11 @@ export async function GET(request: NextRequest) {
         
         if (completedAt && Math.abs(completedAt.getTime() - createdAt.getTime()) < 1000) {
           // Creato e completato nello stesso secondo = sospetto
-          analysis.byCourse[courseId].suspiciousRecords.push({
+          analysis.byCourse[currentCourseId].suspiciousRecords.push({
             id: record.id,
             userId: record.user_id,
-            userEmail: user?.email || 'N/A',
-            lessonTitle: lesson.title || 'N/A',
+            userEmail: userObj?.email || 'N/A',
+            lessonTitle: lessonObj.title || 'N/A',
             completedAt: record.completed_at || '',
             createdAt: record.created_at
           });
@@ -291,11 +318,6 @@ export async function POST(request: NextRequest) {
       // Filtra per userId e courseId se specificati
       let finalIdsToDelete = idsToDelete;
       if (userId || courseId) {
-        const { data: filteredRecords } = await supabaseAdmin
-          .from('progress')
-          .select('id')
-          .in('id', idsToDelete);
-        
         if (userId) {
           // Filtra per userId
           const { data: userRecords } = await supabaseAdmin

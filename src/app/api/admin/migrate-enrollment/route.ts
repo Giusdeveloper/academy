@@ -86,13 +86,28 @@ export async function POST(request: NextRequest) {
       .eq('email', toEmail)
       .single();
 
-    let progressRecords: any[] = [];
+    interface ProgressRecord {
+      id: string;
+      user_id: string;
+      course_id: string;
+      lesson_id: string;
+      completed: boolean;
+      video_watched?: boolean;
+      quiz_completed?: boolean;
+      completed_at?: string | null;
+      video_watched_at?: string | null;
+      quiz_completed_at?: string | null;
+      last_accessed_at?: string | null;
+      time_spent?: number | null;
+    }
+
+    let progressRecords: ProgressRecord[] = [];
     if (fromUser?.id) {
       const { data: progress } = await supabaseAdmin
         .from('progress')
         .select('*')
         .eq('user_id', fromUser.id);
-      progressRecords = progress || [];
+      progressRecords = (progress || []) as ProgressRecord[];
     }
 
     // 3. Migra le iscrizioni
@@ -131,7 +146,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Migra il progresso (solo se abbiamo gli user_id)
-    let migratedProgress = [];
+    const migratedProgress: string[] = [];
     if (fromUser?.id && toUser?.id) {
       for (const progress of progressRecords) {
         // Verifica se esiste già
@@ -177,7 +192,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Migra orders
-    let migratedOrders = [];
+    const migratedOrders: string[] = [];
     if (fromUser?.id && toUser?.id) {
       const { data: orders } = await supabaseAdmin
         .from('orders')
