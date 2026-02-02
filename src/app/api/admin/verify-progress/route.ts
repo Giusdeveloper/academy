@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verifica se ci sono utenti con tutte le lezioni completate immediatamente
-    for (const [courseId, courseData] of Object.entries(analysis.byCourse)) {
+    for (const [, courseData] of Object.entries(analysis.byCourse)) {
       if (courseData.completedLessons === courseData.totalLessons) {
         // Tutte le lezioni completate - potrebbe essere un problema
         analysis.suspiciousPatterns.push({
