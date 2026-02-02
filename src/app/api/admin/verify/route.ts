@@ -9,6 +9,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.id) {
+      console.log('⚠️ /api/admin/verify: Nessuna sessione o user.id mancante');
       return NextResponse.json({ isAdmin: false }, { status: 401 });
     }
 
@@ -17,8 +18,11 @@ export async function GET() {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Supabase URL o Service Role Key non configurati');
-      return NextResponse.json({ isAdmin: false }, { status: 500 });
+      console.error('❌ /api/admin/verify: Supabase URL o Service Role Key non configurati');
+      return NextResponse.json({ 
+        isAdmin: false, 
+        error: 'Configurazione Supabase mancante' 
+      }, { status: 500 });
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -35,17 +39,34 @@ export async function GET() {
       .eq('id', session.user.id)
       .single();
 
-    if (error || !user) {
-      console.error('Errore nel recupero ruolo utente:', error);
-      return NextResponse.json({ isAdmin: false }, { status: 500 });
+    if (error) {
+      // Se l'errore è "not found" (PGRST116), l'utente non esiste nella tabella users
+      if (error.code === 'PGRST116' || error.message?.includes('No rows')) {
+        console.log(`⚠️ /api/admin/verify: Utente ${session.user.id} non trovato nella tabella users`);
+        return NextResponse.json({ isAdmin: false }, { status: 200 }); // 200 invece di 500, non è un errore critico
+      }
+      console.error('❌ /api/admin/verify: Errore nel recupero ruolo utente:', error);
+      return NextResponse.json({ 
+        isAdmin: false, 
+        error: 'Errore nel recupero ruolo utente' 
+      }, { status: 500 });
+    }
+
+    if (!user) {
+      console.log(`⚠️ /api/admin/verify: Utente ${session.user.id} non trovato`);
+      return NextResponse.json({ isAdmin: false }, { status: 200 }); // 200 invece di 500
     }
 
     const isAdmin = user.role === 'ADMIN';
+    console.log(`✅ /api/admin/verify: Utente ${session.user.id} - Admin: ${isAdmin}`);
 
     return NextResponse.json({ isAdmin });
   } catch (error) {
-    console.error('Errore nella verifica admin:', error);
-    return NextResponse.json({ isAdmin: false }, { status: 500 });
+    console.error('❌ /api/admin/verify: Errore generico:', error);
+    return NextResponse.json({ 
+      isAdmin: false, 
+      error: error instanceof Error ? error.message : 'Errore sconosciuto' 
+    }, { status: 500 });
   }
 }
 

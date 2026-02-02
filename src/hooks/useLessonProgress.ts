@@ -29,7 +29,12 @@ export function useLessonProgress(courseId: string) {
   const [user, setUser] = useState<User | null>(null);
 
   const fetchProgress = useCallback(async () => {
-    if (!user) return;
+    // Non fare query se courseId è vuoto o user non è disponibile
+    if (!user || !courseId || courseId.trim() === '') {
+      setProgress([]);
+      setLoading(false);
+      return;
+    }
     
     try {
       setLoading(true);
@@ -60,15 +65,15 @@ export function useLessonProgress(courseId: string) {
     };
   }, []);
 
-  // Carica il progresso quando l'utente è disponibile
+  // Carica il progresso quando l'utente e courseId sono disponibili
   useEffect(() => {
-    if (user) {
+    if (user && courseId && courseId.trim() !== '') {
       fetchProgress();
     } else {
       setProgress([]);
       setLoading(false);
     }
-  }, [user, fetchProgress]);
+  }, [user, courseId, fetchProgress]);
 
   const getLessonStatus = (lessonId: string): 'locked' | 'unlocked' | 'completed' => {
     const lessonProgress = progress.find(p => p.lesson_id === lessonId);

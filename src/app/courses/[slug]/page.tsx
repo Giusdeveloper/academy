@@ -71,8 +71,8 @@ export default function CoursePage() {
   const [showUnenrollModal, setShowUnenrollModal] = useState(false);
   const [previewLesson, setPreviewLesson] = useState<{title: string, content: string} | null>(null);
 
-  // Hook per il progresso delle lezioni
-  const { progress, isLessonUnlocked } = useLessonProgress(course?.id || '');
+  // Hook per il progresso delle lezioni - passa solo se course.id esiste
+  const { progress, isLessonUnlocked } = useLessonProgress(course?.id ?? '');
 
   // Ref per evitare chiamate multiple al controllo completamento
   const completionCheckRef = useRef(false);
