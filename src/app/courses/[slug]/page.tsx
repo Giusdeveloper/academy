@@ -454,6 +454,16 @@ export default function CoursePage() {
         setIsEnrolled(true);
         setShowModal(false);
 
+        // Emetti evento per aggiornare la dashboard
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('courseEnrolled', {
+            detail: { courseId: course.id, courseSlug: course.slug }
+          }));
+          window.dispatchEvent(new CustomEvent('courseUpdated', {
+            detail: { courseId: course.id }
+          }));
+        }
+
         // Traccia l'iscrizione se viene da startup-award e il corso è finanziamento-aziendale
         if (course.slug === 'finanziamento-aziendale') {
           const fromStartupAward = sessionStorage.getItem('registerFrom') === 'startup-award';

@@ -165,15 +165,14 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  // Recupera i corsi dell'utente con progresso
-  useEffect(() => {
-    const fetchUserCourses = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+  // Funzione per recuperare i corsi (esportata per poter essere chiamata manualmente)
+  const fetchUserCourses = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
-      try {
+    try {
         // Recupera i corsi da tre fonti:
         // 1. Ordini completati
         // 2. Iscrizioni dirette (tabella enrollments)
@@ -403,10 +402,42 @@ export default function DashboardPage() {
       } finally {
         setLoading(false);
       }
+  }, [user]);
+
+  // Recupera i corsi quando l'utente cambia
+  useEffect(() => {
+    fetchUserCourses();
+  }, [fetchUserCourses]);
+
+  // Ascolta eventi personalizzati per aggiornare i corsi (es. quando si completa una lezione)
+  useEffect(() => {
+    const handleCourseUpdate = () => {
+      console.log('🔄 Evento aggiornamento corso ricevuto, ricarico corsi...');
+      fetchUserCourses();
     };
 
-    fetchUserCourses();
-  }, [user]);
+    // Ascolta eventi personalizzati
+    window.addEventListener('courseUpdated', handleCourseUpdate);
+    window.addEventListener('lessonCompleted', handleCourseUpdate);
+    window.addEventListener('courseEnrolled', handleCourseUpdate);
+
+    // Aggiorna quando la pagina torna in focus (utente torna alla dashboard)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        console.log('👁️ Pagina tornata in focus, ricarico corsi...');
+        fetchUserCourses();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('courseUpdated', handleCourseUpdate);
+      window.removeEventListener('lessonCompleted', handleCourseUpdate);
+      window.removeEventListener('courseEnrolled', handleCourseUpdate);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, fetchUserCourses]);
 
   // Genera notifiche quando l'utente è disponibile
   useEffect(() => {
@@ -529,9 +560,39 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* My Courses */}
           <section className="md:col-span-2 bg-white rounded-2xl border border-[#e5eaf1] p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-[#183a5a] mb-4">
-              {userCourses.length > 0 ? "I Miei Corsi" : "I Nostri Corsi"}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-[#183a5a]">
+                {userCourses.length > 0 ? "I Miei Corsi" : "I Nostri Corsi"}
+              </h2>
+              {user && (
+                <button
+                  onClick={() => {
+                    setLoading(true);
+                    fetchUserCourses();
+                  }}
+                  disabled={loading}
+                  className="px-3 py-1.5 text-sm text-[#183a5a] border border-[#183a5a] rounded-lg hover:bg-[#183a5a] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Aggiorna lista corsi"
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Aggiornamento...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Aggiorna
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
             {loading ? (
               <div className="flex justify-center items-center py-8">
                 <div className="text-[#183a5a]">Caricamento corsi...</div>

@@ -157,6 +157,16 @@ export function useLessonProgress(courseId: string) {
       
       await fetchProgress();
       
+      // Emetti evento per aggiornare la dashboard
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lessonCompleted', {
+          detail: { lessonId, courseId }
+        }));
+        window.dispatchEvent(new CustomEvent('courseUpdated', {
+          detail: { courseId }
+        }));
+      }
+      
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Errore nel completare la lezione');
     }

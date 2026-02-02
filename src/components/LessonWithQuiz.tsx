@@ -148,6 +148,15 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
 
     if (!quiz) {
       await markLessonCompleted(lesson.id);
+      // Emetti evento per aggiornare la dashboard
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('lessonCompleted', {
+          detail: { lessonId: lesson.id, courseId }
+        }));
+        window.dispatchEvent(new CustomEvent('courseUpdated', {
+          detail: { courseId }
+        }));
+      }
     }
   };
 
