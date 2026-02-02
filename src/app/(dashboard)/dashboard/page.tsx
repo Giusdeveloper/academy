@@ -174,11 +174,12 @@ export default function DashboardPage() {
       }
 
       try {
-        // Recupera i corsi da due fonti:
+        // Recupera i corsi da tre fonti:
         // 1. Ordini completati
-        // 2. Corsi dove l'utente ha dei progressi (per includere corsi iscritti tramite Startup Award o altri metodi)
+        // 2. Iscrizioni dirette (tabella enrollments)
+        // 3. Corsi dove l'utente ha dei progressi (per includere corsi iscritti tramite Startup Award o altri metodi)
         
-        const [ordersResult, progressResult] = await Promise.all([
+        const [ordersResult, enrollmentsResult, progressResult] = await Promise.all([
           // Recupera gli ordini completati
           supabase
             .from('orders')
@@ -202,7 +203,32 @@ export default function DashboardPage() {
             .eq('user_id', user.id)
             .eq('status', 'COMPLETED'),
           
+          // Recupera le iscrizioni dirette
+          supabase
+            .from('enrollments')
+            .select(`
+              course_id,
+              course:course_id (
+                id,
+                slug,
+                title,
+                description,
+                category,
+                level,
+                language,
+                price,
+                duration_hours,
+                ects_max,
+                image_url,
+                created_at
+              )
+            `)
+            .eq('user_email', user.email || '')
+            .eq('status', 'ACTIVE'),
+          
           // Recupera i corsi unici dove l'utente ha dei progressi
+          // NOTA: Questo include anche corsi dove l'utente ha solo iniziato (non completato)
+          // Il progresso viene calcolato separatamente più sotto
           supabase
             .from('progress')
             .select(`
@@ -223,9 +249,14 @@ export default function DashboardPage() {
               )
             `)
             .eq('user_id', user.id)
+            // Non filtriamo per completed qui perché vogliamo vedere anche i corsi in corso
         ]);
 
         if (ordersResult.error) throw ordersResult.error;
+        if (enrollmentsResult.error) {
+          console.error('Errore nel recuperare iscrizioni:', enrollmentsResult.error);
+          // Non bloccare se c'è un errore nelle iscrizioni
+        }
         if (progressResult.error) throw progressResult.error;
 
         // Combina i corsi da ordini e progressi, evitando duplicati
@@ -259,6 +290,17 @@ export default function DashboardPage() {
             if (order.course && order.course.id) {
               courseIds.add(order.course.id);
               coursesMap.set(order.course.id, order.course);
+            }
+          });
+        }
+
+        // Aggiungi corsi da iscrizioni dirette (solo se non già presenti)
+        if (enrollmentsResult.data) {
+          (enrollmentsResult.data as Array<{ course_id: string; course: Course | Course[] }>).forEach((enrollment) => {
+            const course = Array.isArray(enrollment.course) ? enrollment.course[0] : enrollment.course;
+            if (course && course.id && !courseIds.has(course.id)) {
+              courseIds.add(course.id);
+              coursesMap.set(course.id, course);
             }
           });
         }
@@ -317,6 +359,17 @@ export default function DashboardPage() {
             const totalLessons = lessons?.length || 0;
             const completedLessons = progress?.length || 0;
             const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+            // Debug logging per diagnosticare problemi
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`📊 Progresso corso ${course.title}:`, {
+                courseId: course.id,
+                totalLessons,
+                completedLessons,
+                progressPercentage,
+                progressRecords: progress?.map(p => ({ lessonId: p.lesson_id })) || []
+              });
+            }
 
             // Trova l'ultima lezione a cui l'utente ha avuto accesso
             const { data: lastAccess } = await supabase

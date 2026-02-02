@@ -187,9 +187,58 @@ export default function CoursePage() {
   }, [slug]);
 
   useEffect(() => {
-    const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
-    setIsEnrolled(enrolledCourses.includes(course?.id));
-  }, [course?.id]);
+    const checkEnrollment = async () => {
+      if (!course?.id || !user?.email) {
+        // Fallback a localStorage se non c'è utente
+        const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+        setIsEnrolled(enrolledCourses.includes(course?.id));
+        return;
+      }
+
+      // Verifica email dalla sessione
+      const { data: { session } } = await supabase.auth.getSession();
+      const actualEmail = session?.user?.email;
+      const emailToUse = actualEmail || user.email;
+
+      console.log('🔍 Controllo iscrizione:', {
+        userId: user.id,
+        userEmailFromState: user.email,
+        sessionEmail: actualEmail,
+        emailToUse,
+        courseId: course.id
+      });
+
+      try {
+        // Controlla iscrizione in Supabase
+        const { data, error } = await supabase
+          .from('enrollments')
+          .select('id, status')
+          .eq('course_id', course.id)
+          .eq('user_email', emailToUse)
+          .eq('status', 'ACTIVE')
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Errore nel controllare iscrizione:', error);
+        }
+
+        const isEnrolledInDb = !!data;
+        
+        // Controlla anche localStorage per compatibilità
+        const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+        const isEnrolledInLocalStorage = enrolledCourses.includes(course.id);
+
+        setIsEnrolled(isEnrolledInDb || isEnrolledInLocalStorage);
+      } catch (error) {
+        console.error('Errore nel controllo iscrizione:', error);
+        // Fallback a localStorage
+        const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+        setIsEnrolled(enrolledCourses.includes(course?.id));
+      }
+    };
+
+    checkEnrollment();
+  }, [course?.id, user?.email]);
 
   // Calcola il numero di lezioni completate (per evitare loop nel useEffect)
   const completedLessonsCount = progress.filter(p => p.completed).length;
@@ -308,32 +357,152 @@ export default function CoursePage() {
   };
 
   const handleEnrollConfirm = async () => {
-    if (course && user) {
-      const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
-      enrolledCourses.push(course.id);
-      localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
-      setIsEnrolled(true);
-      setShowModal(false);
+    if (course && user && user.email) {
+      // Log per diagnosticare problemi di email
+      console.log('🔍 Debug iscrizione:', {
+        userId: user.id,
+        userEmail: user.email,
+        userEmailFromSession: user.email,
+        courseId: course.id,
+        courseTitle: course.title
+      });
 
-      // Traccia l'iscrizione se viene da startup-award e il corso è finanziamento-aziendale
-      if (course.slug === 'finanziamento-aziendale') {
-        const fromStartupAward = sessionStorage.getItem('registerFrom') === 'startup-award';
-        if (fromStartupAward && user.email) {
-          try {
-            await trackPhase1Enrollment(user.email, course.id);
-            console.log('✅ Iscrizione Fase 1 tracciata per Startup Award');
-            // Rimuovi il flag solo dopo che l'iscrizione è stata tracciata con successo
-            sessionStorage.removeItem('registerFrom');
-          } catch (error) {
-            console.error('❌ Errore nel tracciare iscrizione:', error);
+      // Verifica che l'email sia corretta
+      const { data: { session } } = await supabase.auth.getSession();
+      const actualEmail = session?.user?.email;
+      
+      if (actualEmail && actualEmail !== user.email) {
+        console.warn('⚠️ Discrepanza email:', {
+          userEmail: user.email,
+          sessionEmail: actualEmail
+        });
+      }
+
+      const emailToUse = actualEmail || user.email;
+      console.log('✅ Usando email per iscrizione:', emailToUse);
+
+      try {
+        // Salva l'iscrizione in Supabase nella tabella enrollments
+        const { error: enrollmentError } = await supabase
+          .from('enrollments')
+          .upsert({
+            course_id: course.id,
+            user_email: emailToUse,
+            enrolled_at: new Date().toISOString(),
+            status: 'ACTIVE'
+          }, {
+            onConflict: 'course_id,user_email'
+          });
+
+        if (enrollmentError) {
+          console.error('❌ Errore nel salvare iscrizione in Supabase:', enrollmentError);
+          // Continua comunque con localStorage per non bloccare l'utente
+        } else {
+          console.log('✅ Iscrizione salvata in Supabase');
+        }
+
+        // Crea anche un record in orders per tracciare l'iscrizione (anche se gratuita)
+        // Questo permette di avere un'unica fonte di verità per gli ordini/iscrizioni
+        // Nota: orders è principalmente per tracciare pagamenti, ma creiamo un record anche per iscrizioni gratuite
+        if (user.id) {
+          // Verifica se esiste già un ordine per questo utente e corso
+          const { data: existingOrder } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', course.id)
+            .single();
+
+          if (!existingOrder) {
+            // Crea un nuovo ordine solo se non esiste già
+            const { error: orderError } = await supabase
+              .from('orders')
+              .insert({
+                user_id: user.id,
+                course_id: course.id,
+                amount: course.price || 0,
+                status: course.price > 0 ? 'PENDING' : 'COMPLETED'
+              });
+
+            if (orderError) {
+              console.warn('⚠️ Errore nel creare record in orders (non critico):', orderError);
+            } else {
+              console.log('✅ Record in orders creato');
+            }
+          } else {
+            // Se esiste già, aggiorna lo status a COMPLETED se il corso è gratuito
+            if (course.price === 0) {
+              const { error: updateError } = await supabase
+                .from('orders')
+                .update({ status: 'COMPLETED' })
+                .eq('id', existingOrder.id);
+
+              if (updateError) {
+                console.warn('⚠️ Errore nell\'aggiornare ordine (non critico):', updateError);
+              }
+            }
           }
         }
+
+        // Salva anche in localStorage per compatibilità
+        const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+        if (!enrolledCourses.includes(course.id)) {
+          enrolledCourses.push(course.id);
+          localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
+        }
+        
+        setIsEnrolled(true);
+        setShowModal(false);
+
+        // Traccia l'iscrizione se viene da startup-award e il corso è finanziamento-aziendale
+        if (course.slug === 'finanziamento-aziendale') {
+          const fromStartupAward = sessionStorage.getItem('registerFrom') === 'startup-award';
+          if (fromStartupAward) {
+            try {
+              await trackPhase1Enrollment(emailToUse, course.id);
+              console.log('✅ Iscrizione Fase 1 tracciata per Startup Award con email:', emailToUse);
+              // Rimuovi il flag solo dopo che l'iscrizione è stata tracciata con successo
+              sessionStorage.removeItem('registerFrom');
+            } catch (error) {
+              console.error('❌ Errore nel tracciare iscrizione:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Errore generale nell\'iscrizione:', error);
+        // Fallback: salva almeno in localStorage
+        const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+        if (!enrolledCourses.includes(course.id)) {
+          enrolledCourses.push(course.id);
+          localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
+        }
+        setIsEnrolled(true);
+        setShowModal(false);
       }
     }
   };
 
-  const handleUnenrollConfirm = () => {
-    if (course) {
+  const handleUnenrollConfirm = async () => {
+    if (course && user?.email) {
+      try {
+        // Aggiorna lo stato dell'iscrizione in Supabase
+        const { error: updateError } = await supabase
+          .from('enrollments')
+          .update({ status: 'CANCELLED' })
+          .eq('course_id', course.id)
+          .eq('user_email', user.email);
+
+        if (updateError) {
+          console.error('❌ Errore nell\'aggiornare iscrizione in Supabase:', updateError);
+          // Continua comunque con localStorage
+        } else {
+          console.log('✅ Disiscrizione salvata in Supabase');
+        }
+      } catch (error) {
+        console.error('❌ Errore nella disiscrizione:', error);
+      }
+
+      // Aggiorna anche localStorage
       const enrolledCourses = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
       const updatedCourses = enrolledCourses.filter((id: string) => id !== course.id);
       localStorage.setItem('enrolledCourses', JSON.stringify(updatedCourses));
