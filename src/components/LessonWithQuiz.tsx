@@ -175,13 +175,14 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
             videoUrl={videoMaterial.html5_url || videoMaterial.url}
             title={lesson.title}
             onVideoEnd={handleVideoEnd}
+            videoType={videoMaterial.video_type || 'html5'}
           />
         </div>
       )}
 
       {/* Contenuto della lezione */}
       {lesson.content && (
-        <div className="prose max-w-none mb-8">
+        <div className="prose prose-gray max-w-none mb-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900 prose-li:text-gray-800 prose-a:text-[#9e005c] prose-a:no-underline hover:prose-a:underline">
           <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
         </div>
       )}

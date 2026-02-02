@@ -500,9 +500,10 @@ export default function CoursePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Anteprima del corso</h3>
               <div className="video-player-container">
                 <VideoPlayer 
-                  videoUrl={getVideoForLesson(lessons[0]?.id)?.url || null}
+                  videoUrl={getVideoForLesson(lessons[0]?.id)?.html5_url || getVideoForLesson(lessons[0]?.id)?.url || null}
                   title={lessons[0]?.title || course?.title || 'Video del corso'}
                   className="w-full"
+                  videoType={getVideoForLesson(lessons[0]?.id)?.video_type || 'html5'}
                 />
               </div>
             </div>

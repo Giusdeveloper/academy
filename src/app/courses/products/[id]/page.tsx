@@ -251,9 +251,10 @@ export default function CoursePage() {
             {/* Video Player */}
             <div className="video-player-container mb-6">
               <VideoPlayer 
-                videoUrl={getVideoForLesson(lessons[0]?.id)?.url || null}
+                videoUrl={getVideoForLesson(lessons[0]?.id)?.html5_url || getVideoForLesson(lessons[0]?.id)?.url || null}
                 title={lessons[0]?.title || course?.title || 'Video del corso'}
                 className="w-full"
+                videoType={getVideoForLesson(lessons[0]?.id)?.video_type || 'html5'}
               />
             </div>
 

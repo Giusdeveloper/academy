@@ -5,9 +5,10 @@ interface VideoPlayerProps {
   title: string;
   className?: string;
   onVideoEnd?: () => void;
+  videoType?: 'iframe' | 'html5';
 }
 
-export default function VideoPlayer({ videoUrl, className = '', onVideoEnd }: VideoPlayerProps) {
+export default function VideoPlayer({ videoUrl, className = '', onVideoEnd, videoType = 'html5' }: VideoPlayerProps) {
 
   if (!videoUrl) {
     return (
@@ -24,9 +25,47 @@ export default function VideoPlayer({ videoUrl, className = '', onVideoEnd }: Vi
     );
   }
 
+  // Se è un video iframe (YouTube/Vimeo), usa iframe
+  if (videoType === 'iframe') {
+    // Estrae l'ID del video da URL YouTube o Vimeo
+    const getEmbedUrl = (url: string): string => {
+      // YouTube
+      const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+      const youtubeMatch = url.match(youtubeRegex);
+      if (youtubeMatch) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0&modestbranding=1`;
+      }
+      
+      // Vimeo
+      const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
+      const vimeoMatch = url.match(vimeoRegex);
+      if (vimeoMatch) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+      }
+      
+      // Se è già un URL embed, usalo direttamente
+      if (url.includes('embed') || url.includes('player.vimeo.com')) {
+        return url;
+      }
+      
+      // Fallback: usa l'URL originale
+      return url;
+    };
+
+    return (
+      <div className={`aspect-video bg-black rounded-xl overflow-hidden ${className}`}>
+        <iframe
+          src={getEmbedUrl(videoUrl)}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title={title}
+        />
+      </div>
+    );
+  }
+
   // Per video HTML5, usiamo direttamente l'URL del video
-
-
   return (
     <div className={`aspect-video bg-black rounded-xl overflow-hidden ${className}`}>
       <video
