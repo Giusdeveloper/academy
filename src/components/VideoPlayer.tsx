@@ -8,7 +8,7 @@ interface VideoPlayerProps {
   videoType?: 'iframe' | 'html5';
 }
 
-export default function VideoPlayer({ videoUrl, className = '', onVideoEnd, videoType = 'html5' }: VideoPlayerProps) {
+export default function VideoPlayer({ videoUrl, title, className = '', onVideoEnd, videoType = 'html5' }: VideoPlayerProps) {
 
   if (!videoUrl) {
     return (
