@@ -58,10 +58,25 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { markVideoWatched, markLessonCompleted, markQuizCompleted } = useLessonProgress(courseId);
+  const { progress, markVideoWatched, markLessonCompleted, markQuizCompleted } = useLessonProgress(courseId);
 
   // Trova il materiale video
   const videoMaterial = materials.find(material => material.type === 'video');
+
+  // Sincronizza lo stato locale con il progresso caricato dal database
+  useEffect(() => {
+    if (progress && progress.length > 0) {
+      const lessonProgress = progress.find(p => p.lesson_id === lesson.id);
+      if (lessonProgress) {
+        if (lessonProgress.video_watched || lessonProgress.completed) {
+          setVideoEnded(true);
+        }
+        if (lessonProgress.quiz_completed || lessonProgress.completed) {
+          setQuizCompleted(true);
+        }
+      }
+    }
+  }, [progress, lesson.id]);
 
   const fetchQuiz = useCallback(async () => {
     try {
@@ -226,6 +241,21 @@ export default function LessonWithQuiz({ lesson, materials, courseId }: LessonWi
                 </div>
               ))}
           </div>
+        </div>
+      )}
+
+      {/* Pulsante di backup per il completamento video (necessario per iframe e fallback) */}
+      {videoMaterial && !videoEnded && (
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={handleVideoEnd}
+            className="bg-gray-50 hover:bg-gray-100 text-gray-600 px-6 py-3 rounded-lg border border-gray-200 transition-colors font-medium flex items-center gap-2 text-sm shadow-sm"
+          >
+            <span>Ho finito di guardare il video</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
         </div>
       )}
 

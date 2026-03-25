@@ -9,6 +9,15 @@ interface VideoPlayerProps {
 }
 
 export default function VideoPlayer({ videoUrl, title, className = '', onVideoEnd, videoType = 'html5' }: VideoPlayerProps) {
+  // Auto-rilevamento del tipo di video dall'URL
+  const isIframeUrl = videoUrl && (
+    videoUrl.includes('youtube.com') || 
+    videoUrl.includes('youtu.be') || 
+    videoUrl.includes('vimeo.com') ||
+    videoUrl.includes('player.vimeo.com')
+  );
+  
+  const effectiveVideoType = isIframeUrl ? 'iframe' : videoType;
 
   if (!videoUrl) {
     return (
@@ -26,7 +35,7 @@ export default function VideoPlayer({ videoUrl, title, className = '', onVideoEn
   }
 
   // Se è un video iframe (YouTube/Vimeo), usa iframe
-  if (videoType === 'iframe') {
+  if (effectiveVideoType === 'iframe') {
     // Estrae l'ID del video da URL YouTube o Vimeo
     const getEmbedUrl = (url: string): string => {
       // YouTube

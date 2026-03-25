@@ -189,20 +189,22 @@ export function useLessonProgress(courseId: string) {
         throw new Error(`Utente ${user.id} non trovato nel database`);
       }
 
-      // Salva il tentativo del quiz
-      const { error: attemptError } = await supabase
-        .from('quiz_attempts')
-        .insert({
-          user_id: user.id,
-          quiz_id: quizId,
-          lesson_id: lessonId,
-          answers: {}, // Le risposte sono gestite nel componente
-          score: score,
-          passed: passed
-        });
+      // Salva il tentativo del quiz solo se quizId è fornito
+      if (quizId && quizId.trim() !== '') {
+        const { error: attemptError } = await supabase
+          .from('quiz_attempts')
+          .insert({
+            user_id: user.id,
+            quiz_id: quizId,
+            lesson_id: lessonId,
+            answers: {}, // Le risposte sono gestite nel componente
+            score: score,
+            passed: passed
+          });
 
-      if (attemptError) {
-        throw attemptError;
+        if (attemptError) {
+          throw attemptError;
+        }
       }
 
       // Aggiorna il progresso della lezione usando upsert
