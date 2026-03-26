@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/config/supabase';
 import './verify-email.css';
@@ -11,21 +11,33 @@ function VerifyEmailContent() {
   const [redirectTo, setRedirectTo] = useState<'dashboard' | 'course'>('dashboard');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const verificationProcessed = useRef(false);
 
   useEffect(() => {
+    // Impedisce la doppia esecuzione del trigger (causa comune del token "scaduto")
+    if (verificationProcessed.current) return;
+
     const verifyEmail = async () => {
       try {
-        // Controlla prima se ci sono errori nei parametri URL (query params)
+        // Prima verifica: l'utente è già autenticato? 
+        // Spesso Supabase gestisce il redirect e logga l'utente prima ancora che questo script parta.
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.email_confirmed_at) {
+          console.log('✅ Utente già verificato tramite sessione esistente');
+          handleSuccess();
+          return;
+        }
+
+        // Procediamo con l'estrazione dei parametri se non siamo ancora loggati
         let error = searchParams.get('error');
         let errorCode = searchParams.get('error_code');
         let errorDescription = searchParams.get('error_description');
 
-        // Se non ci sono errori nei query params, controlla l'hash dell'URL
+        // Controlla hash (#) perché Supabase spesso mette i dati lì
         if (!error && typeof window !== 'undefined') {
           const hash = window.location.hash;
           if (hash) {
-            console.log('🔍 Controllo hash URL:', hash);
-            const hashParams = new URLSearchParams(hash.substring(1)); // Rimuove il #
+            const hashParams = new URLSearchParams(hash.substring(1));
             error = hashParams.get('error');
             errorCode = hashParams.get('error_code');
             errorDescription = hashParams.get('error_description');
@@ -33,144 +45,90 @@ function VerifyEmailContent() {
         }
 
         if (error) {
+          // Se l'errore è "otp_expired" ma abbiamo una sessione valida, ignoriamolo
+          if (errorCode === 'otp_expired' && session) {
+            handleSuccess();
+            return;
+          }
+
           console.log('❌ Errore rilevato:', { error, errorCode, errorDescription });
-          
-          if (errorCode === 'otp_expired') {
-            setStatus('error');
-            setMessage('Il link di verifica è scaduto. I link di verifica sono validi per 24 ore. Richiedi una nuova email di verifica.');
-            return;
-          } else if (error === 'access_denied') {
-            setStatus('error');
-            setMessage('Accesso negato. Il link di verifica potrebbe essere stato già utilizzato o non è valido.');
-            return;
-          } else {
-            setStatus('error');
-            setMessage(`Errore nella verifica: ${errorDescription || error}`);
-            return;
-          }
+          setStatus('error');
+          setMessage(errorCode === 'otp_expired' 
+            ? 'Il link è scaduto o è già stato utilizzato. Prova ad accedere direttamente.' 
+            : `Errore: ${errorDescription || error}`);
+          return;
         }
 
-        // Supabase può usare diversi parametri per la verifica
-        let accessToken = searchParams.get('access_token');
-        let refreshToken = searchParams.get('refresh_token');
-        let token = searchParams.get('token');
-        let type = searchParams.get('type');
+        // Estrazione token/type per metodo OTP
+        let token = searchParams.get('token_hash') || searchParams.get('token');
+        let type = (searchParams.get('type') as any) || 'signup';
 
-        // Se non troviamo i parametri nei query params, controlliamo l'hash
-        if (!accessToken && typeof window !== 'undefined') {
-          const hash = window.location.hash;
-          if (hash) {
-            const hashParams = new URLSearchParams(hash.substring(1));
-            accessToken = hashParams.get('access_token');
-            refreshToken = hashParams.get('refresh_token');
-            token = hashParams.get('token');
-            type = hashParams.get('type');
-          }
+        if (!token && typeof window !== 'undefined') {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          token = hashParams.get('token_hash') || hashParams.get('token');
+          type = (hashParams.get('type') as any) || type;
         }
 
-        console.log('🔐 Parametri URL ricevuti:', {
-          accessToken: !!accessToken,
-          refreshToken: !!refreshToken,
-          token: !!token,
-          type
-        });
-
-        // Metodo 1: Se abbiamo access_token e refresh_token (metodo standard Supabase)
-        if (accessToken && refreshToken) {
-          console.log('🔐 Verificando con access_token e refresh_token');
-          
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-
-          if (error) {
-            console.error('❌ Errore verifica con session:', error);
-            setStatus('error');
-            setMessage('Errore nella verifica dell\'email. Il link potrebbe essere scaduto o non valido.');
-            return;
-          }
-
-          if (data.user && data.user.email_confirmed_at) {
-            console.log('✅ Email verificata con successo tramite session!');
-            setStatus('success');
-            
-            // Controlla se l'utente arriva da startup-award
-            const fromStartupAward = typeof window !== 'undefined' && sessionStorage.getItem('registerFrom') === 'startup-award';
-            if (fromStartupAward) {
-              setMessage('Email verificata con successo! Ora puoi accedere al corso "Finanziamento Aziendale".');
-              setRedirectTo('course');
-            } else {
-              setMessage('Email verificata con successo! Ora puoi accedere al tuo account.');
-            }
-            
-            // Reindirizza dopo 3 secondi
-            setTimeout(() => {
-              if (fromStartupAward) {
-                // NON rimuovere il flag qui - verrà rimosso dopo l'iscrizione al corso
-                // Reindirizza al corso finanziamento-aziendale
-                router.push('/courses/finanziamento-aziendale');
-              } else {
-                router.push('/dashboard');
-              }
-            }, 3000);
-            return;
-          }
-        }
-
-        // Metodo 2: Se abbiamo token e type (metodo OTP)
-        if (type === 'signup' && token) {
-          console.log('🔐 Verificando email con token OTP:', token);
-          
-          const { data, error } = await supabase.auth.verifyOtp({
+        if (token) {
+          console.log('🔐 Tentativo di verifica con token...');
+          verificationProcessed.current = true;
+          const { data, error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: token,
-            type: 'signup'
+            type: type === 'invite' ? 'invite' : (type === 'recovery' ? 'recovery' : 'signup')
           });
 
-          if (error) {
-            console.error('❌ Errore verifica OTP:', error);
-            setStatus('error');
-            setMessage('Errore nella verifica dell\'email. Il link potrebbe essere scaduto o non valido.');
-            return;
-          }
-
-          if (data.user) {
-            console.log('✅ Email verificata con successo tramite OTP!');
-            setStatus('success');
-            
-            // Controlla se l'utente arriva da startup-award
-            const fromStartupAward = typeof window !== 'undefined' && sessionStorage.getItem('registerFrom') === 'startup-award';
-            if (fromStartupAward) {
-              setMessage('Email verificata con successo! Ora puoi accedere al corso "Finanziamento Aziendale".');
-              setRedirectTo('course');
+          if (verifyError) {
+            // Se fallisce ma ora abbiamo una sessione, consideralo successo
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
+            if (retrySession) {
+              handleSuccess();
             } else {
-              setMessage('Email verificata con successo! Ora puoi accedere al tuo account.');
+              throw verifyError;
             }
-            
-            // Reindirizza dopo 3 secondi
-            setTimeout(() => {
-              if (fromStartupAward) {
-                // NON rimuovere il flag qui - verrà rimosso dopo l'iscrizione al corso
-                // Reindirizza al corso finanziamento-aziendale
-                router.push('/courses/finanziamento-aziendale');
-              } else {
-                router.push('/dashboard');
-              }
-            }, 3000);
-            return;
+          } else if (data.user) {
+            handleSuccess();
           }
+        } else if (session) {
+          // Nessun token ma sessione attiva = successo (probabilmente gestito dal middleware di Supabase)
+          handleSuccess();
+        } else {
+          // Attendi un momento, forse il caricamento della sessione è lento
+          setTimeout(async () => {
+            const { data: { session: finalCheck } } = await supabase.auth.getSession();
+            if (finalCheck) handleSuccess();
+            else {
+              setStatus('error');
+              setMessage('Nessun dato di verifica trovato nel link. Prova a fare il login.');
+            }
+          }, 2000);
         }
-
-        // Se nessun metodo ha funzionato
-        console.log('❌ Nessun parametro di verifica valido trovato');
-        setStatus('error');
-        setMessage('Link di verifica non valido. Assicurati di aver cliccato sul link completo dall\'email.');
         
-      } catch (error) {
-        console.error('❌ Errore durante la verifica:', error);
+      } catch (err: any) {
+        console.error('❌ Errore durante la verifica:', err);
         setStatus('error');
-        setMessage('Si è verificato un errore durante la verifica dell\'email.');
+        setMessage('Il link potrebbe essere stato già utilizzato. Prova ad accedere.');
       }
+    };
+
+    const handleSuccess = () => {
+      verificationProcessed.current = true;
+      setStatus('success');
+      
+      const fromStartupAward = typeof window !== 'undefined' && sessionStorage.getItem('registerFrom') === 'startup-award';
+      if (fromStartupAward) {
+        setMessage('Email verificata! Ora puoi accedere al corso "Finanziamento Aziendale".');
+        setRedirectTo('course');
+      } else {
+        setMessage('Email verificata con successo! Benvenuto nell\'Academy.');
+      }
+      
+      setTimeout(() => {
+        if (fromStartupAward) {
+          router.push('/courses/finanziamento-aziendale');
+        } else {
+          router.push('/dashboard');
+        }
+      }, 2500);
     };
 
     verifyEmail();
