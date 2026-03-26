@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/config/supabase';
+import { EmailOtpType } from '@supabase/supabase-js';
 import './verify-email.css';
 
 function VerifyEmailContent() {
@@ -20,7 +21,6 @@ function VerifyEmailContent() {
     const verifyEmail = async () => {
       try {
         // Prima verifica: l'utente è già autenticato? 
-        // Spesso Supabase gestisce il redirect e logga l'utente prima ancora che questo script parta.
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.email_confirmed_at) {
           console.log('✅ Utente già verificato tramite sessione esistente');
@@ -45,7 +45,6 @@ function VerifyEmailContent() {
         }
 
         if (error) {
-          // Se l'errore è "otp_expired" ma abbiamo una sessione valida, ignoriamolo
           if (errorCode === 'otp_expired' && session) {
             handleSuccess();
             return;
@@ -61,24 +60,28 @@ function VerifyEmailContent() {
 
         // Estrazione token/type per metodo OTP
         let token = searchParams.get('token_hash') || searchParams.get('token');
-        let type = (searchParams.get('type') as any) || 'signup';
+        let typeStr = searchParams.get('type') || 'signup';
 
         if (!token && typeof window !== 'undefined') {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           token = hashParams.get('token_hash') || hashParams.get('token');
-          type = (hashParams.get('type') as any) || type;
+          typeStr = hashParams.get('type') || typeStr;
         }
 
         if (token) {
           console.log('🔐 Tentativo di verifica con token...');
           verificationProcessed.current = true;
+          
+          // Mappatura sicura del tipo di OTP
+          const type: EmailOtpType = typeStr === 'invite' ? 'invite' : 
+                                    (typeStr === 'recovery' ? 'recovery' : 'signup');
+
           const { data, error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: token,
-            type: type === 'invite' ? 'invite' : (type === 'recovery' ? 'recovery' : 'signup')
+            type: type
           });
 
           if (verifyError) {
-            // Se fallisce ma ora abbiamo una sessione, consideralo successo
             const { data: { session: retrySession } } = await supabase.auth.getSession();
             if (retrySession) {
               handleSuccess();
@@ -89,10 +92,8 @@ function VerifyEmailContent() {
             handleSuccess();
           }
         } else if (session) {
-          // Nessun token ma sessione attiva = successo (probabilmente gestito dal middleware di Supabase)
           handleSuccess();
         } else {
-          // Attendi un momento, forse il caricamento della sessione è lento
           setTimeout(async () => {
             const { data: { session: finalCheck } } = await supabase.auth.getSession();
             if (finalCheck) handleSuccess();
@@ -103,8 +104,9 @@ function VerifyEmailContent() {
           }, 2000);
         }
         
-      } catch (err: any) {
-        console.error('❌ Errore durante la verifica:', err);
+      } catch (err: unknown) {
+        const error = err as Error;
+        console.error('❌ Errore durante la verifica:', error);
         setStatus('error');
         setMessage('Il link potrebbe essere stato già utilizzato. Prova ad accedere.');
       }
